@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vem av oss? – Kontrollpanel</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin">
+
+  <header class="bar">
+    <div class="brand">
+      <span class="script">Vem av oss?</span>
+      <span class="sub">Kontrollpanel för toastmastern</span>
+    </div>
+    <div class="bar-actions">
+      <button class="btn ghost" id="open-stage" title="Öppnar scenvyn i ett nytt fönster – dra det till projektorn och tryck F">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v11H4zM9 20h6M12 16v4"/></svg>Öppna scenvy
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <!-- ========== Livestyrning ========== -->
+    <section class="panel live">
+      <div class="panel-head">
+        <h2>Live</h2>
+        <span class="status" id="status"></span>
+      </div>
+
+      <div class="preview-wrap" id="preview-wrap">
+        <iframe id="preview" src="stage.html?preview=1" title="Förhandsvisning av scenen" tabindex="-1"></iframe>
+        <span class="preview-label">Så ser scenen ut nu</span>
+      </div>
+
+      <div class="now" id="now"></div>
+
+      <div class="controls">
+        <button class="btn big" id="prev" title="Föregående (←)">
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Bakåt
+        </button>
+        <button class="btn big primary" id="next" title="Nästa (→ eller mellanslag)">
+          <span id="next-label">Nästa</span><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <div class="phases" id="phases">
+        <button class="chip" data-phase="ask">1 · Påstående</button>
+        <button class="chip" data-phase="vote" id="phase-vote">2 · Nedräkning</button>
+        <button class="chip" data-phase="reveal">3 · Avslöja</button>
+      </div>
+
+      <div class="screens">
+        <button class="btn small" data-screen="intro">Intro</button>
+        <button class="btn small" id="pause-btn">Paus</button>
+        <button class="btn small" data-screen="outro">Avslutning</button>
+        <button class="btn small" id="replay" title="Spela upp nedräkning/konfetti igen">Igen ↻</button>
+      </div>
+
+      <div class="upnext" id="upnext"></div>
+
+      <p class="keys">
+        Kortkommandon: <kbd>→</kbd>/<kbd>Mellanslag</kbd> nästa · <kbd>←</kbd> bakåt · <kbd>B</kbd> paus.
+        En presentationsklicker fungerar direkt i scenfönstret.
+      </p>
+    </section>
+
+    <!-- ========== Påståenden ========== -->
+    <section class="panel list-panel">
+      <div class="panel-head">
+        <h2>Påståenden <span class="count" id="count"></span></h2>
+        <div class="filters" id="filters">
+          <button class="chip on" data-filter="all">Alla</button>
+          <button class="chip" data-filter="tilda">Tilda</button>
+          <button class="chip" data-filter="oliver">Oliver</button>
+          <button class="chip" data-filter="off">Bortvalda</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn small" data-bulk="all-on">Välj alla</button>
+        <button class="btn small" data-bulk="all-off">Välj bort alla</button>
+        <button class="btn small" data-bulk="interleave" title="Slumpa ordningen men varva Tilda och Oliver">Blanda &amp; varva</button>
+        <button class="btn small" data-bulk="shuffle">Slumpa helt</button>
+        <button class="btn small danger" data-bulk="reset" title="Återställ listan till originalpåståendena">Återställ</button>
+      </div>
+
+      <ol class="list" id="list"></ol>
+
+      <form class="add" id="add-form" autocomplete="off">
+        <h3>Lägg till eget påstående</h3>
+        <textarea id="add-text" rows="2" placeholder="T.ex. ”Har en gång ringt fel nummer i en hel timme utan att märka det”" required></textarea>
+        <input id="add-punch" type="text" placeholder="Poäng som visas vid avslöjandet (valfritt)">
+        <div class="add-row">
+          <div class="who-picker" id="add-who">
+            <label><input type="radio" name="who" value="tilda" checked><span>Tilda</span></label>
+            <label><input type="radio" name="who" value="oliver"><span>Oliver</span></label>
+            <label><input type="radio" name="who" value="both"><span>Båda</span></label>
+            <label><input type="radio" name="who" value="none"><span>Påhittat</span></label>
+          </div>
+          <button class="btn primary" type="submit">Lägg till</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ========== Inställningar ========== -->
+    <section class="panel settings">
+      <div class="panel-head"><h2>Inställningar</h2></div>
+      <label class="row"><input type="checkbox" data-setting="countdown"> <span>Nedräkning ”3-2-1 peka!” före avslöjandet</span></label>
+      <label class="row indent"><span>Sekunder</span> <input type="number" min="1" max="10" data-setting="countdownSeconds"></label>
+      <label class="row indent col"><span>Text under nedräkningen</span> <input type="text" data-setting="votePrompt"></label>
+      <label class="row"><input type="checkbox" data-setting="sound"> <span>Ljudeffekter (klick i scenfönstret en gång för att aktivera)</span></label>
+      <label class="row"><input type="checkbox" data-setting="showProgress"> <span>Visa förloppsprickar</span></label>
+      <label class="row"><input type="checkbox" data-setting="showMicCue"> <span>Visa ”Ordet till …” vid avslöjandet</span></label>
+      <div class="row">
+        <span>Tema</span>
+        <div class="seg" id="theme">
+          <button data-theme="light">Ljust</button>
+          <button data-theme="dark">Mörkt (kväll)</button>
+        </div>
+      </div>
+      <button class="btn small danger" id="reset-all">Nollställ allt</button>
+    </section>
+  </main>
+
+  <template id="row-tpl">
+    <li class="item" draggable="true">
+      <span class="grip" title="Dra för att flytta">⋮⋮</span>
+      <label class="toggle" title="Med i showen?"><input type="checkbox"><span></span></label>
+      <span class="num"></span>
+      <div class="body">
+        <div class="text" spellcheck="false"></div>
+        <div class="punch" spellcheck="false"></div>
+      </div>
+      <button class="who" title="Klicka för att ändra svar"></button>
+      <div class="acts">
+        <button class="icon go" title="Visa på scenen nu"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg></button>
+        <button class="icon edit" title="Redigera"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/></svg></button>
+        <button class="icon up" title="Flytta upp"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button>
+        <button class="icon down" title="Flytta ner"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+        <button class="icon del" title="Ta bort"><svg viewBox="0 0 24 24"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg></button>
+      </div>
+    </li>
+  </template>
+
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

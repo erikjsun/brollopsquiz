@@ -1,0 +1,86 @@
+/* ---------- Typsnitt (lokala, så att allt funkar utan internet) ---------- */
+@font-face { font-family: 'Cormorant Garamond'; src: url('../fonts/cormorant-garamond-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Cormorant Garamond'; src: url('../fonts/cormorant-garamond-latin-500-normal.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Cormorant Garamond'; src: url('../fonts/cormorant-garamond-latin-600-normal.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Cormorant Garamond'; src: url('../fonts/cormorant-garamond-latin-400-italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Cormorant Garamond'; src: url('../fonts/cormorant-garamond-latin-500-italic.woff2') format('woff2'); font-weight: 500; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Great Vibes'; src: url('../fonts/great-vibes-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Jost'; src: url('../fonts/jost-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Jost'; src: url('../fonts/jost-latin-500-normal.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Jost'; src: url('../fonts/jost-latin-600-normal.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+
+/* ---------- Färger ---------- */
+:root {
+  --serif: 'Cormorant Garamond', 'Cormorant', Georgia, 'Times New Roman', serif;
+  --script: 'Great Vibes', 'Snell Roundhand', 'Brush Script MT', cursive;
+  --sans: 'Jost', 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+
+  --ivory: #fbf6ee;
+  --paper: #f5ecdf;
+  --paper-2: #efe2d0;
+  --ink: #3a2822;
+  --ink-soft: #6d5850;
+  --ink-faint: #a8958a;
+  --wine: #7a2e3a;
+  --gold: #b08a45;
+  --gold-2: #d9bb7f;
+  --gold-3: #f1dfb4;
+  --line: rgba(176, 138, 69, 0.45);
+
+  --tilda: #cf7f86;        /* rosa/blush */
+  --tilda-soft: #f4d7d5;
+  --oliver: #6f917a;       /* salvia/eukalyptus */
+  --oliver-soft: #d8e4d6;
+
+  --bg: var(--ivory);
+  --bg-2: var(--paper);
+  --text: var(--ink);
+  --text-soft: var(--ink-soft);
+  --accent: var(--wine);
+  color-scheme: light;
+}
+
+/* Mörkt kvällstema – aktiveras från kontrollpanelen */
+:root[data-theme='dark'] {
+  --bg: #24121a;
+  --bg-2: #341a24;
+  --paper: #3a1f2a;
+  --paper-2: #4a2735;
+  --text: #f6ead8;
+  --text-soft: #d9c3aa;
+  --ink-faint: #9c8474;
+  --accent: #efc9a0;
+  --gold: #d6b06a;
+  --gold-2: #e8cc8f;
+  --gold-3: #f6e6bd;
+  --line: rgba(214, 176, 106, 0.5);
+  --tilda: #e39aa0;
+  --tilda-soft: #5a2d38;
+  --oliver: #93b79c;
+  --oliver-soft: #2f4236;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font: inherit; color: inherit; }
+
+.script { font-family: var(--script); font-weight: 400; }
+.serif { font-family: var(--serif); }
+
+.gold-text {
+  background: linear-gradient(100deg, var(--gold) 0%, var(--gold-2) 30%, var(--gold-3) 48%, var(--gold-2) 62%, var(--gold) 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

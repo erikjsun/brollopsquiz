@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vem av oss? – Oliver &amp; Tilda</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 32px 16px;
+      background:
+        radial-gradient(900px 500px at 0% 20%, var(--tilda-soft), transparent 60%),
+        radial-gradient(900px 500px at 100% 20%, var(--oliver-soft), transparent 60%),
+        var(--ivory);
+      text-align: center;
+    }
+    main { max-width: 640px; }
+    .eyebrow { font-size: 12px; letter-spacing: .4em; text-transform: uppercase; color: var(--ink-soft); }
+    h1 { margin: 6px 0 4px; font-family: var(--script); font-weight: 400; font-size: clamp(64px, 14vw, 120px); line-height: 1.1; }
+    .names { font-family: var(--serif); font-style: italic; font-size: 24px; color: var(--ink-soft); margin: 0 0 32px; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; text-align: left; }
+    a.card {
+      display: block;
+      padding: 22px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.75);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      text-decoration: none;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s;
+    }
+    a.card:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: 0 14px 30px -18px rgba(58,40,34,.5); }
+    a.card b { display: block; font-family: var(--serif); font-size: 26px; font-weight: 600; margin-bottom: 6px; }
+    a.card span { color: var(--ink-soft); font-size: 14px; line-height: 1.5; }
+    ol { text-align: left; margin: 32px auto 0; padding-left: 20px; color: var(--ink-soft); line-height: 1.8; font-size: 15px; }
+    ol b { color: var(--ink); font-weight: 500; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">Bröllopslek</div>
+    <h1 class="gold-text">Vem av oss?</h1>
+    <p class="names">Oliver &amp; Tilda</p>
+
+    <div class="cards">
+      <a class="card" href="admin.html">
+        <b>Kontrollpanel</b>
+        <span>För toastmastern. Välj påståenden, ändra ordning och styr vad som visas.</span>
+      </a>
+      <a class="card" href="stage.html">
+        <b>Scenvy</b>
+        <span>Fullskärm för projektorn. Tryck <b style="display:inline;font:inherit;font-weight:600">F</b> för helskärm.</span>
+      </a>
+    </div>
+
+    <ol>
+      <li>Öppna <b>Kontrollpanelen</b> på datorn som är kopplad till projektorn.</li>
+      <li>Klicka <b>Öppna scenvy</b>, dra fönstret till projektorn och tryck <b>F</b>.</li>
+      <li>Styr med <b>Nästa</b> i panelen – eller med en klicker/piltangenter i scenfönstret.</li>
+    </ol>
+  </main>
+</body>
+</html>
