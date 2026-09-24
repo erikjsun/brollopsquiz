@@ -47,7 +47,9 @@ att originalbilden kan läggas in som den är.
 
 ## Påståenden
 
-Grundlistan finns i `js/data.js`. Texterna är omskrivna så att de inte avslöjar vem det
+Grundlistan finns i `js/data.js`. Första gången sidan öppnas slumpas ordningen,
+varvat så att samma person inte kommer mer än två gånger i rad. Ordningen sparas sedan
+tills man trycker **Blanda & varva**, **Slumpa helt** eller **Återställ**. Texterna är omskrivna så att de inte avslöjar vem det
 gäller (inga ”han”/”hon”). Där originalet hade en poäng som avslöjar personen visas
 den i stället först vid avslöjandet (`punchline`). Allt går också att ändra i kontrollpanelen,
 där man kan lägga till egna påståenden. Svaret kan vara Tilda, Oliver, **Båda** eller

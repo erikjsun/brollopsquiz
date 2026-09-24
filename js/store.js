@@ -16,10 +16,40 @@
 
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
 
+  function shuffled(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // Slumpad ordning där samma person aldrig kommer mer än två gånger i rad
+  // (så långt det går – är det många fler om en person blir det ibland fler).
+  function interleaved(list) {
+    const key = x => (x.who === 'tilda' || x.who === 'oliver' ? x.who : 'other');
+    const buckets = {};
+    shuffled(list).forEach(x => (buckets[key(x)] = buckets[key(x)] || []).push(x));
+    const out = [];
+    while (out.length < list.length) {
+      const n = out.length;
+      const blocked = n > 1 && key(out[n - 1]) === key(out[n - 2]) ? key(out[n - 1]) : null;
+      let pool = Object.entries(buckets).filter(([k, v]) => v.length && k !== blocked);
+      if (!pool.length) pool = Object.entries(buckets).filter(([, v]) => v.length);
+      // viktat efter hur många som är kvar, så att ingen hamnar i klump på slutet
+      let r = Math.random() * pool.reduce((sum, [, v]) => sum + v.length, 0);
+      let pick = pool[pool.length - 1][0];
+      for (const [k, v] of pool) { r -= v.length; if (r < 0) { pick = k; break; } }
+      out.push(buckets[pick].shift());
+    }
+    return out;
+  }
+
   function defaults() {
     return {
       v: 1,
-      statements: VAO.DEFAULT_STATEMENTS.map(s => ({ punchline: '', ...clone(s), enabled: true, custom: false })),
+      statements: interleaved(VAO.DEFAULT_STATEMENTS.map(s => ({ punchline: '', ...clone(s), enabled: true, custom: false }))),
       settings: { theme: 'light', ...clone(VAO.DEFAULT_SETTINGS) },
       live: { screen: 'intro', id: null, phase: 'ask', paused: false, t: Date.now() },
       rev: 0
@@ -30,7 +60,11 @@
     const base = defaults();
     try {
       const raw = localStorage.getItem(KEY);
-      if (!raw) return base;
+      if (!raw) {
+        // Spara direkt så att scen och kontrollpanel får samma slumpade ordning
+        localStorage.setItem(KEY, JSON.stringify(base));
+        return base;
+      }
       const saved = JSON.parse(raw);
       if (!saved || saved.v !== 1) return base;
       return {
@@ -177,39 +211,11 @@
       update(s => s.statements.forEach(x => { if (!who || x.who === who) x.enabled = value; }));
     },
     shuffle() {
-      update(s => {
-        const a = s.statements;
-        for (let i = a.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [a[i], a[j]] = [a[j], a[i]];
-        }
-      });
+      update(s => { s.statements = shuffled(s.statements); });
     },
     // Blanda, men varva så att samma person inte kommer för många gånger i rad
     interleave() {
-      update(s => {
-        const rand = arr => arr.sort(() => Math.random() - 0.5);
-        const buckets = {
-          tilda: rand(s.statements.filter(x => x.who === 'tilda')),
-          oliver: rand(s.statements.filter(x => x.who === 'oliver')),
-          other: rand(s.statements.filter(x => x.who !== 'tilda' && x.who !== 'oliver'))
-        };
-        const out = [];
-        while (buckets.tilda.length + buckets.oliver.length + buckets.other.length) {
-          const total = buckets.tilda.length + buckets.oliver.length + buckets.other.length;
-          const last = out.length ? out[out.length - 1].who : null;
-          // välj slumpat, viktat efter antal kvar, men undvik 3 i rad
-          const two = out.length > 1 && out[out.length - 2].who === last ? last : null;
-          const opts = Object.entries(buckets).filter(([k, v]) => v.length && k !== two);
-          const pool = opts.length ? opts : Object.entries(buckets).filter(([, v]) => v.length);
-          let r = Math.random() * pool.reduce((n, [, v]) => n + v.length, 0);
-          let pick = pool[0][0];
-          for (const [k, v] of pool) { r -= v.length; if (r <= 0) { pick = k; break; } }
-          out.push(buckets[pick].shift());
-          if (out.length > total + 100) break;
-        }
-        s.statements = out;
-      });
+      update(s => { s.statements = interleaved(s.statements); });
     },
     resetStatements() {
       update(s => {

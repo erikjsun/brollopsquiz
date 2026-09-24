@@ -232,7 +232,7 @@
       case 'shuffle': actions.shuffle(); toast('Ordningen slumpad'); break;
       case 'interleave': actions.interleave(); toast('Blandat och varvat'); break;
       case 'reset':
-        if (confirm('Återställa alla påståenden till originalet? Egna tillägg och ändringar försvinner.')) { actions.resetStatements(); toast('Återställt'); }
+        if (confirm('Återställa alla påståenden till originalet (i en ny slumpad ordning)? Egna tillägg och ändringar försvinner.')) { actions.resetStatements(); toast('Återställt'); }
         break;
     }
   });
