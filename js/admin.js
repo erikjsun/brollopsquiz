@@ -265,6 +265,12 @@
     else toast('Dra fönstret till projektorn och tryck F för helskärm');
   });
 
+  // Efter ett musklick ska mellanslag inte klicka samma knapp igen (t.ex. Återställ)
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (btn && e.detail > 0 && !btn.closest('form')) btn.blur();
+  });
+
   document.addEventListener('keydown', e => {
     const t = e.target;
     if (editingId || t.isContentEditable) return;

@@ -126,7 +126,7 @@
     const l = s.live;
     if (l.screen !== 'question') return all.findIndex(x => x.screen === l.screen);
     let i = all.findIndex(x => x.id === l.id && x.phase === l.phase);
-    if (i === -1) i = all.findIndex(x => x.id === l.id && x.phase === 'reveal');
+    if (i === -1) i = all.findIndex(x => x.id === l.id && x.phase === (l.phase === 'vote' ? 'ask' : 'reveal'));
     return i;
   }
 
@@ -145,7 +145,7 @@
   const actions = {
     next() {
       update(s => {
-        if (s.live.paused) { s.live.paused = false; s.live.t = Date.now(); return; }
+        if (s.live.paused) { s.live.paused = false; return; }
         const all = steps(s);
         const i = stepIndex(s);
         // Om aktuellt påstående har tagits bort ur listan: gå till första frågan
@@ -155,7 +155,7 @@
     },
     prev() {
       update(s => {
-        if (s.live.paused) { s.live.paused = false; s.live.t = Date.now(); return; }
+        if (s.live.paused) { s.live.paused = false; return; }
         const all = steps(s);
         const i = stepIndex(s);
         const target = i <= 0 ? all[0] : all[i - 1];
@@ -172,7 +172,7 @@
       });
     },
     showScreen(screen) { update(s => setLive(s, { screen })); },
-    togglePause() { update(s => { s.live.paused = !s.live.paused; s.live.t = Date.now(); }); },
+    togglePause() { update(s => { s.live.paused = !s.live.paused; }); },
     replay() { update(s => { s.live.t = Date.now(); }); },
 
     updateStatement(id, patch) {

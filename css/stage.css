@@ -343,6 +343,13 @@ html, body { height: 100%; overflow: hidden; }
 
 .card[data-phase='reveal'] .statement { transform: scale(.9); opacity: .8; }
 
+/* Kort som byggs om när texten ändras live: inga animationer igen */
+.card.instant .slot > * { transition: none !important; }
+.card.quiet-reveal .reveal-name,
+.card.quiet-reveal .punchline,
+.card.quiet-reveal .mic,
+.card.quiet-reveal .stamp { animation: none !important; opacity: 1; }
+
 /* ---- nedre fältet: fråga / nedräkning / avslöjande ---- */
 .slot { position: relative; width: 100%; }
 .slot > * {

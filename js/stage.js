@@ -238,10 +238,16 @@
       const next = buildQuestion(q, s);
       next.style.animation = 'none';
       next.querySelectorAll('.word').forEach(w => (w.style.animation = 'none', w.style.opacity = 1, w.style.transform = 'none', w.style.filter = 'none'));
+      next.dataset.phase = phase;
+      next.classList.add('instant');
+      if (phase === 'reveal') next.classList.add('quiet-reveal');
       if (card) card.remove();
       card = next;
       scene.appendChild(next);
       fitCard();
+      requestAnimationFrame(() => requestAnimationFrame(() => next.classList.remove('instant')));
+      // Det nya kortet behöver sin egen nedräkning (tyst, samma starttid)
+      if (phase === 'vote') startCountdown(live.t, Math.max(1, s.settings.countdownSeconds | 0), true);
     }
     if (card) card.dataset.phase = phase;
 
@@ -278,18 +284,16 @@
     pause.classList.toggle('on', !!live.paused);
 
     // Effekter som bara ska köras en gång per ändring
-    const effect = [key, phase, live.t, live.paused].join('|');
+    const effect = [key, phase, live.t].join('|');
     if (effect !== lastEffect) {
       const first = lastEffect === null;
       lastEffect = effect;
       stopCountdown();
-      if (!live.paused) {
-        if (screen === 'question' && phase === 'vote') {
-          startCountdown(live.t, Math.max(1, s.settings.countdownSeconds | 0), first);
-        }
-        if (!first && ((screen === 'question' && phase === 'reveal') || screen === 'outro')) {
-          setTimeout(() => celebrate(s, q), 150);
-        }
+      if (screen === 'question' && phase === 'vote') {
+        startCountdown(live.t, Math.max(1, s.settings.countdownSeconds | 0), first || live.paused);
+      }
+      if (!first && !live.paused && ((screen === 'question' && phase === 'reveal') || screen === 'outro')) {
+        setTimeout(() => celebrate(s, q), 150);
       }
     }
   }
