@@ -21,8 +21,8 @@ VAO.PEOPLE = {
   tilda: {
     name: 'Tilda',
     photo: 'assets/tilda',
-    zoom: 2.3,
-    focus: [0.595, 0.28],
+    zoom: 2.5,
+    focus: [0.615, 0.30],
     monogram: 'T'
   },
   oliver: {
