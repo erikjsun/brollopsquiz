@@ -5,9 +5,9 @@
  * Varje låt renderas en gång till en ljudbuffert (OfflineAudioContext) och
  * loopas sedan sömlöst. Byte mellan låtar sker med en kort övertoning.
  *
- *   theme   – Showtema: glad, snabb dur-låt med studsig bas, blås och melodi
- *   bed     – Bakgrund: lättare och gladlynt, att prata över
- *   tension – Spänning: tickande "tänkmusik" som stiger mot avslöjandet
+ *   theme   – Showtema: knasig cirkuspolka med kazoo, tuba och honky-tonk-piano
+ *   bed     – Bakgrund: smygande tå-dans med fagott och pizzicato, att prata över
+ *   tension – Spänning: tick-tack, kromatiskt klättrande och visselglidare
  */
 (function () {
   // ---------------- Noter ----------------
@@ -182,134 +182,232 @@
     }
   };
 
+  // ---------------- Knasiga instrument ----------------
+  Object.assign(I, {
+    // Oompah-tuba: mjuk, fet och lite "blöt" i anslaget
+    tuba(ctx, out, t, note, dur, vol = 1) {
+      const f0 = hz(note);
+      const o = ctx.createOscillator(), s = ctx.createOscillator(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
+      o.type = 'sawtooth'; s.type = 'sine';
+      [o, s].forEach(x => { x.frequency.setValueAtTime(f0 * 0.94, t); x.frequency.exponentialRampToValueAtTime(f0, t + 0.05); });
+      lp.type = 'lowpass'; lp.Q.value = 2;
+      lp.frequency.setValueAtTime(300, t); lp.frequency.exponentialRampToValueAtTime(900, t + 0.04); lp.frequency.exponentialRampToValueAtTime(420, t + 0.2);
+      const sg = ctx.createGain(); sg.gain.value = 0.7;
+      o.connect(lp).connect(g); s.connect(sg).connect(g); g.connect(out);
+      env(g, t, 0.02, vol * 0.45, dur * 0.75, 0.04);
+      o.start(t); s.start(t); o.stop(t + dur + 0.3); s.stop(t + dur + 0.3);
+    },
+    // Kazoo: surrig, nasal melodi med "scoop" upp till tonen
+    kazoo(ctx, out, t, note, dur, vol = 1) {
+      const f0 = hz(note);
+      const o = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain(), sum = ctx.createGain();
+      o.type = 'sawtooth'; o2.type = 'square';
+      [o, o2].forEach(x => { x.frequency.setValueAtTime(f0 * 0.93, t); x.frequency.exponentialRampToValueAtTime(f0, t + 0.045); });
+      o2.detune.value = 12;
+      const lfo = ctx.createOscillator(), lg = ctx.createGain();
+      lfo.frequency.value = 7; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(f0 * 0.025, t + Math.min(dur, 0.25));
+      lfo.connect(lg); lg.connect(o.frequency); lg.connect(o2.frequency);
+      const o2g = ctx.createGain(); o2g.gain.value = 0.5;
+      o.connect(sum); o2.connect(o2g).connect(sum);
+      // formanter = "näsa"
+      [[650, 4, 1], [1250, 5, 0.8], [2600, 6, 0.5]].forEach(([f, q, a]) => {
+        const bp = ctx.createBiquadFilter(), bg = ctx.createGain();
+        bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = q; bg.gain.value = a;
+        sum.connect(bp).connect(bg).connect(g);
+      });
+      g.connect(out);
+      env(g, t, 0.015, vol * 0.5, dur * 0.88, 0.03);
+      [o, o2, lfo].forEach(x => { x.start(t); x.stop(t + dur + 0.3); });
+    },
+    // Honky-tonk-piano: två lite ostämda strängar per ton
+    honky(ctx, out, t, notes, dur, vol = 1) {
+      notes.forEach(n => {
+        const f0 = hz(n);
+        [-14, 12].forEach(det => {
+          const o = ctx.createOscillator(), g = ctx.createGain(), lp = ctx.createBiquadFilter();
+          o.type = 'triangle'; o.frequency.value = f0; o.detune.value = det;
+          lp.type = 'lowpass'; lp.frequency.setValueAtTime(5000, t); lp.frequency.exponentialRampToValueAtTime(1200, t + 0.2);
+          o.connect(lp).connect(g).connect(out);
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(vol * 0.07, t + 0.004);
+          g.gain.exponentialRampToValueAtTime(vol * 0.015, t + 0.25);
+          g.gain.setTargetAtTime(0.0001, t + dur, 0.05);
+          o.start(t); o.stop(t + dur + 0.4);
+        });
+      });
+    },
+    // Fagott: studsig, staccato "bopp"
+    bassoon(ctx, out, t, note, dur, vol = 1) {
+      const f0 = hz(note);
+      const o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), bp = ctx.createBiquadFilter(), g = ctx.createGain();
+      o.type = 'square'; o.frequency.setValueAtTime(f0 * 1.03, t); o.frequency.exponentialRampToValueAtTime(f0, t + 0.03);
+      lp.type = 'lowpass'; lp.frequency.value = 1100; lp.Q.value = 3;
+      bp.type = 'peaking'; bp.frequency.value = 500; bp.gain.value = 8;
+      o.connect(lp).connect(bp).connect(g).connect(out);
+      env(g, t, 0.01, vol * 0.22, dur * 0.6, 0.03);
+      o.start(t); o.stop(t + dur + 0.3);
+    },
+    // Visselglidare (slide whistle)
+    slide(ctx, out, t, from, to, dur, vol = 1) {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      const lfo = ctx.createOscillator(), lg = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(from, t); o.frequency.exponentialRampToValueAtTime(to, t + dur);
+      lfo.frequency.value = 9; lg.gain.value = from * 0.02; lfo.connect(lg).connect(o.frequency);
+      o.connect(g).connect(out);
+      env(g, t, 0.03, vol * 0.22, dur, 0.04);
+      noise(ctx, out, t, { type: 'bandpass', freq: Math.sqrt(from * to), q: 2, vol: vol * 0.05, dur }); // lite luft
+      [o, lfo].forEach(x => { x.start(t); x.stop(t + dur + 0.2); });
+    },
+    // Boing! – fjäder/mungiga
+    boing(ctx, out, t, freq = 220, vol = 1) {
+      const o = ctx.createOscillator(), g = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(freq * 0.6, t);
+      o.frequency.exponentialRampToValueAtTime(freq * 1.5, t + 0.05);
+      o.frequency.exponentialRampToValueAtTime(freq, t + 0.5);
+      lfo.frequency.setValueAtTime(22, t); lfo.frequency.exponentialRampToValueAtTime(8, t + 0.6);
+      lg.gain.setValueAtTime(freq * 0.25, t); lg.gain.exponentialRampToValueAtTime(freq * 0.02, t + 0.6);
+      lfo.connect(lg).connect(o.frequency);
+      o.connect(g).connect(out);
+      g.gain.setValueAtTime(vol * 0.35, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.65);
+      [o, lfo].forEach(x => { x.start(t); x.stop(t + 0.7); });
+    },
+    // Cykeltuta
+    honk(ctx, out, t, vol = 1, pitch = 1) {
+      const g = ctx.createGain(), bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = 1100; bp.Q.value = 1.2;
+      [392, 415].forEach(f => {
+        const o = ctx.createOscillator();
+        o.type = 'square';
+        o.frequency.setValueAtTime(f * pitch * 0.9, t); o.frequency.linearRampToValueAtTime(f * pitch, t + 0.04);
+        o.connect(bp); o.start(t); o.stop(t + 0.22);
+      });
+      bp.connect(g).connect(out);
+      env(g, t, 0.01, vol * 0.4, 0.14, 0.03);
+    },
+    // Gnisslig gummileksak
+    squeak(ctx, out, t, vol = 1) {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(1400, t); o.frequency.exponentialRampToValueAtTime(2800, t + 0.05); o.frequency.exponentialRampToValueAtTime(1900, t + 0.12);
+      o.connect(g).connect(out);
+      env(g, t, 0.008, vol * 0.18, 0.1, 0.02);
+      o.start(t); o.stop(t + 0.2);
+    },
+    woodblock(ctx, out, t, vol = 1, freq = 1000) {
+      const o = ctx.createOscillator(), g = ctx.createGain(), bp = ctx.createBiquadFilter();
+      o.type = 'triangle'; o.frequency.setValueAtTime(freq * 1.2, t); o.frequency.exponentialRampToValueAtTime(freq, t + 0.01);
+      bp.type = 'bandpass'; bp.frequency.value = freq; bp.Q.value = 3;
+      o.connect(bp).connect(g).connect(out);
+      g.gain.setValueAtTime(vol * 0.6, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+      o.start(t); o.stop(t + 0.08);
+    },
+    // Snabb xylofon-glissando
+    gliss(ctx, out, t, notes, step, vol = 1) {
+      notes.forEach((n, i) => I.marimba(ctx, out, t + i * step, n, step * 2, vol));
+    }
+  });
+
   // ---------------- Låtar ----------------
   // play(ctx, mix, t0, S): mix.ch(pan, reverb) ger en kanal, S = en sextondel i sekunder
   const up = (n, semis) => midi(n) + semis; // transponera (ger midi-nummer)
+  const C_UP = ['C5', 'D5', 'E5', 'F5', 'G5', 'A5', 'B5', 'C6'];
 
   const TRACKS = {
+    // Cirkuspolka med kazoo, tuba och honky-tonk-piano
     theme: {
-      bpm: 148, bars: 8, reverb: 0.22,
+      bpm: 160, bars: 8, reverb: 0.18,
       play(ctx, mix, t0, S) {
         const at = s => t0 + s * S;
-        const drums = mix.ch(0, 0.08), bassCh = mix.ch(0, 0), brassL = mix.ch(-0.35, 0.25), brassR = mix.ch(0.35, 0.25);
-        const leadCh = mix.ch(0.08, 0.3), glockCh = mix.ch(-0.2, 0.4), hatCh = mix.ch(0.3, 0.05), marCh = mix.ch(-0.4, 0.2);
-        // I – vi – IV – V: den gladaste ackordföljden som finns
-        const bars = [
-          { root: 'C2', chord: ['E4', 'G4', 'C5'], arp: ['C5', 'E5', 'G5', 'E5'] },
-          { root: 'A1', chord: ['E4', 'A4', 'C5'], arp: ['A4', 'C5', 'E5', 'C5'] },
-          { root: 'F1', chord: ['F4', 'A4', 'C5'], arp: ['A4', 'C5', 'F5', 'C5'] },
-          { root: 'G1', chord: ['D4', 'G4', 'B4'], arp: ['G4', 'B4', 'D5', 'B4'] },
-          { root: 'C2', chord: ['E4', 'G4', 'C5'], arp: ['C5', 'E5', 'G5', 'E5'] },
-          { root: 'A1', chord: ['E4', 'A4', 'C5'], arp: ['A4', 'C5', 'E5', 'C5'] },
-          { root: 'F1', chord: ['F4', 'A4', 'C5'], arp: ['A4', 'C5', 'F5', 'C5'], half: { root: 'G1', chord: ['D4', 'G4', 'B4'] } },
-          { root: 'G1', chord: ['D4', 'F4', 'G4', 'B4'], arp: ['G4', 'B4', 'D5', 'F5'] }
-        ];
+        const tubaCh = mix.ch(0, 0), pianoL = mix.ch(-0.3, 0.2), pianoR = mix.ch(0.3, 0.2), kazooCh = mix.ch(0.05, 0.22);
+        const drums = mix.ch(0, 0.06), blockL = mix.ch(-0.6, 0.1), blockR = mix.ch(0.6, 0.1), sfxL = mix.ch(-0.5, 0.25), sfxR = mix.ch(0.5, 0.25);
+        const C = { bass: ['C2', 'G1'], chord: ['E4', 'G4', 'C5'] };
+        const G7 = { bass: ['G1', 'D2'], chord: ['F4', 'G4', 'B4', 'D5'] };
+        const F = { bass: ['F1', 'C2'], chord: ['F4', 'A4', 'C5'] };
+        const bars = [C, G7, G7, C, C, F, G7, C];
         bars.forEach((b, bar) => {
           const b0 = bar * 16;
-          for (let i = 0; i < 8; i++) {
-            const c = b.half && i >= 4 ? b.half : b;
-            // studsig oktavbas: låg-hög-låg-hög, kvinten innan nästa ackord
-            const n = i === 7 ? up(c.root, 19) : up(c.root, i % 2 ? 12 : 0);
-            I.bass(ctx, bassCh, at(b0 + i * 2), n, S * 1.5, i % 2 ? 0.8 : 1);
-          }
-          // blås på alla "och"-slag – ger det där glada, hoppiga
-          [2, 6, 10, 14].forEach((s, k) => {
-            const c = b.half && s >= 8 ? b.half : b;
-            I.brass(ctx, k % 2 ? brassR : brassL, at(b0 + s), c.chord, S * 0.9, k === 0 ? 1 : 0.85);
-          });
-          if (bar % 4 === 0) I.brass(ctx, brassL, at(b0), b.chord.map(n => up(n, 12)), S * 3, 0.7);
-          // marimba-arpeggio i sextondelar (tyst, glittrig)
-          for (let s = 0; s < 16; s++) I.marimba(ctx, marCh, at(b0 + s), b.arp[s % 4], S, s % 4 ? 0.35 : 0.5);
-          // trummor: kick på varje slag, handklapp på 2 och 4, shaker i sextondelar
-          [0, 4, 8, 12].forEach(s => I.kick(ctx, drums, at(b0 + s), 0.85));
-          [4, 12].forEach(s => { I.clap(ctx, drums, at(b0 + s), 0.8); I.snare(ctx, drums, at(b0 + s), 0.3); });
-          for (let s = 0; s < 16; s++) I.shaker(ctx, hatCh, at(b0 + s), s % 2 ? 0.6 : 1);
-          [2, 6, 10, 14].forEach(s => I.hat(ctx, hatCh, at(b0 + s), 0.55, true));
+          // OOM-pah OOM-pah
+          // grundton på ett och tre, kvint på två och fyra
+          [0, 4, 8, 12].forEach((s, i) => I.tuba(ctx, tubaCh, at(b0 + s), b.bass[i % 2], S * 2.2, i % 2 ? 0.8 : 1));
+          [2, 6, 10, 14].forEach((s, i) => I.honky(ctx, i % 2 ? pianoR : pianoL, at(b0 + s), b.chord, S * 1.2, 1));
+          [0, 8].forEach(s => I.kick(ctx, drums, at(b0 + s), 0.6));
+          [4, 12].forEach(s => I.snare(ctx, drums, at(b0 + s), 0.35));
+          // klipp-klopp på träblock
+          [2, 7, 10, 15].forEach((s, i) => I.woodblock(ctx, i % 2 ? blockR : blockL, at(b0 + s), 0.5, i % 2 ? 1250 : 850));
         });
-        // Melodi: [steg, ton, längd i sextondelar]
         const mel = [
-          [0, 'G5', 2], [2, 'E5', 2], [4, 'G5', 2], [6, 'C6', 4], [10, 'B5', 2], [12, 'C6', 2], [14, 'D6', 2],
-          [16, 'E6', 4], [20, 'C6', 2], [22, 'A5', 4], [26, 'G5', 2], [28, 'A5', 4],
-          [32, 'F5', 2], [34, 'A5', 2], [36, 'C6', 2], [38, 'F6', 4], [42, 'E6', 2], [44, 'D6', 2], [46, 'C6', 2],
-          [48, 'D6', 4], [52, 'B5', 2], [54, 'G5', 4], [58, 'A5', 2], [60, 'B5', 4],
-          [64, 'C6', 2], [66, 'G5', 2], [68, 'E5', 2], [70, 'G5', 2], [72, 'C6', 4], [76, 'E6', 4],
-          [80, 'D6', 2], [82, 'C6', 2], [84, 'A5', 4], [88, 'C6', 2], [90, 'E6', 6],
-          [96, 'F6', 2], [98, 'E6', 2], [100, 'C6', 2], [102, 'A5', 2], [104, 'B5', 2], [106, 'D6', 2], [108, 'G6', 4],
-          [112, 'F6', 2], [114, 'E6', 2], [116, 'D6', 2], [118, 'B5', 2], [120, 'G5', 2], [122, 'A5', 2], [124, 'B5', 2], [126, 'D6', 2]
+          [0, 'E5', 2], [2, 'D#5', 1], [3, 'E5', 1], [4, 'G5', 2], [6, 'E5', 2], [8, 'C5', 2], [10, 'D5', 2], [12, 'E5', 4],
+          [16, 'F5', 2], [18, 'E5', 1], [19, 'F5', 1], [20, 'A5', 2], [22, 'F5', 2], [24, 'D5', 2], [26, 'E5', 2], [28, 'F5', 4],
+          [32, 'G5', 2], [34, 'F#5', 1], [35, 'G5', 1], [36, 'B5', 2], [38, 'G5', 2], [40, 'F5', 2], [42, 'D5', 2], [44, 'B4', 2], [46, 'D5', 2],
+          [48, 'C5', 4],
+          [64, 'E5', 2], [66, 'G5', 2], [68, 'C6', 2], [70, 'G5', 2], [72, 'A5', 1], [73, 'G5', 1], [74, 'F#5', 1], [75, 'G5', 1], [76, 'E5', 4],
+          [80, 'F5', 2], [82, 'A5', 2], [84, 'C6', 2], [86, 'A5', 2], [88, 'G#5', 2], [90, 'A5', 2], [92, 'F5', 4],
+          [96, 'D5', 1], [97, 'E5', 1], [98, 'F5', 1], [99, 'F#5', 1], [100, 'G5', 2], [102, 'B5', 2], [104, 'D6', 2], [106, 'B5', 2], [108, 'G5', 2], [110, 'F5', 2],
+          [112, 'E5', 2], [114, 'G5', 2], [116, 'C6', 3]
         ];
-        mel.forEach(([s, n, l]) => {
-          I.lead(ctx, leadCh, at(s), n, l * S, 1);
-          if (s >= 64) I.glock(ctx, glockCh, at(s), up(n, 12), l * S, 0.55); // klockspel dubblar andra halvan
-        });
-        // trumvirvel in i loopen igen
-        [120, 122, 124, 125, 126, 127].forEach((s, i) => I.snare(ctx, drums, at(s), 0.35 + i * 0.08));
+        mel.forEach(([s, n, l]) => I.kazoo(ctx, kazooCh, at(s), n, l * S, 1));
+        // Knasiga ljud i pauserna
+        I.slide(ctx, sfxL, at(52), 500, 1600, S * 7, 1);        // uuuiiip!
+        I.boing(ctx, sfxR, at(60), 260, 1);                     // boing!
+        I.slide(ctx, sfxR, at(119), 1500, 450, S * 3, 0.9);     // nedåt
+        I.honk(ctx, sfxL, at(122), 0.9);                        // tut
+        I.honk(ctx, sfxL, at(123.5), 0.9, 1.06);                // tut!
+        I.gliss(ctx, sfxR, at(125), C_UP, S / 2.8, 0.7);        // xylofon upp
       }
     },
 
+    // Smygande tå-dans med fagott och pizzicato – lekfull men lugn att prata över
     bed: {
-      bpm: 116, bars: 8, swing: 0.12, reverb: 0.28,
+      bpm: 120, bars: 8, swing: 0.14, reverb: 0.26,
       play(ctx, mix, t0, S, swing) {
-        const at = s => t0 + s * S + (s % 4 === 2 ? swing * S * 2 : 0);
-        const drums = mix.ch(0, 0.1), bassCh = mix.ch(0, 0), marL = mix.ch(-0.35, 0.3), keysR = mix.ch(0.3, 0.3);
-        const glockCh = mix.ch(0.15, 0.45), shakeCh = mix.ch(0.35, 0.05);
-        // I – IV – V – I, glatt och enkelt
-        const bars = [
-          { root: 'C2', chord: ['E4', 'G4', 'C5'], arp: ['C5', 'G4', 'E5', 'G4'] },
-          { root: 'F1', chord: ['F4', 'A4', 'C5'], arp: ['C5', 'A4', 'F5', 'A4'] },
-          { root: 'G1', chord: ['D4', 'G4', 'B4'], arp: ['B4', 'G4', 'D5', 'G4'] },
-          { root: 'C2', chord: ['E4', 'G4', 'C5'], arp: ['C5', 'G4', 'E5', 'G4'] },
-          { root: 'A1', chord: ['E4', 'A4', 'C5'], arp: ['C5', 'A4', 'E5', 'A4'] },
-          { root: 'F1', chord: ['F4', 'A4', 'C5'], arp: ['C5', 'A4', 'F5', 'A4'] },
-          { root: 'D2', chord: ['F4', 'A4', 'D5'], arp: ['D5', 'A4', 'F5', 'A4'] },
-          { root: 'G1', chord: ['D4', 'F4', 'B4'], arp: ['B4', 'G4', 'D5', 'F5'] }
-        ];
-        bars.forEach((b, bar) => {
+        const at = s => t0 + s * S + (Math.floor(s) % 4 === 2 ? swing * S * 2 : 0);
+        const bassCh = mix.ch(0, 0.05), pizz = mix.ch(-0.3, 0.3), toy = mix.ch(0.35, 0.4), drums = mix.ch(0, 0.1), sfx = mix.ch(0.4, 0.3);
+        const bassline = [['C2', 'E2', 'G2', 'E2'], ['A1', 'C#2', 'E2', 'C#2'], ['D2', 'F#2', 'A2', 'F#2'], ['G1', 'B1', 'D2', 'F2']];
+        for (let bar = 0; bar < 8; bar++) {
           const b0 = bar * 16;
-          // hoppig bas: ett, (och-två), tre, fyra upp
-          [[0, 0, 1], [6, 0, 0.6], [8, 7, 0.9], [12, 12, 0.7]].forEach(([s, semi, v]) => I.bass(ctx, bassCh, at(b0 + s), up(b.root, semi), S * 1.6, v * 0.85));
-          // marimba i åttondelar
-          for (let s = 0; s < 16; s += 2) I.marimba(ctx, marL, at(b0 + s), b.arp[(s / 2) % 4], S * 2, s % 4 ? 0.5 : 0.7);
-          // lätta ackord på baktakten
-          [4, 12].forEach(s => I.keys(ctx, keysR, at(b0 + s), b.chord, S * 1.4, 0.8));
-          I.kick(ctx, drums, at(b0), 0.5);
-          I.kick(ctx, drums, at(b0 + 8), 0.4);
-          [4, 12].forEach(s => I.clap(ctx, drums, at(b0 + s), 0.35));
-          for (let s = 0; s < 16; s += 2) I.shaker(ctx, shakeCh, at(b0 + s), s % 4 ? 0.8 : 0.45);
-        });
-        // Små klockspelsfraser – glad frågesportsstämning
-        [[24, 'G5'], [26, 'C6'], [28, 'E6'], [30, 'G6'],
-         [56, 'A5'], [58, 'C6'], [60, 'F6'],
-         [88, 'E6'], [90, 'D6'], [92, 'C6'], [94, 'E6'],
-         [120, 'D6'], [122, 'F6'], [124, 'G6'], [126, 'B6']].forEach(([s, n]) => I.glock(ctx, glockCh, at(s), n, S * 2, 0.8));
+          bassline[bar % 4].forEach((n, i) => I.bassoon(ctx, bassCh, at(b0 + i * 4), n, S * 1.6, 1));
+          [4, 12].forEach(s => I.clap(ctx, drums, at(b0 + s), 0.22));
+          for (let s = 0; s < 16; s += 2) I.shaker(ctx, drums, at(b0 + s), s % 4 ? 0.5 : 0.25);
+        }
+        // Tå-på-tå-melodi med kromatiska smygsteg
+        const tiptoe = [
+          [0, 'E4', 1], [2, 'F4', 1], [3, 'F#4', 1], [4, 'G4', 2], [8, 'C5', 1], [10, 'G4', 1], [12, 'E4', 2],
+          [16, 'C#5', 1], [18, 'D5', 1], [19, 'D#5', 1], [20, 'E5', 2], [24, 'G5', 1], [26, 'E5', 1], [28, 'C#5', 2],
+          [32, 'F#4', 1], [34, 'G4', 1], [35, 'G#4', 1], [36, 'A4', 2], [40, 'C5', 1], [42, 'A4', 1], [44, 'F#4', 2],
+          [48, 'B4', 1], [50, 'D5', 1], [52, 'F5', 1], [54, 'A5', 1], [56, 'G5', 2]
+        ];
+        tiptoe.forEach(([s, n, l]) => I.marimba(ctx, pizz, at(s), n, l * S, 0.9));
+        // andra varvet: leksakspiano en oktav upp, och ett kromatiskt fall på slutet
+        tiptoe.slice(0, 21).forEach(([s, n, l]) => I.glock(ctx, toy, at(s + 64), up(n, 12), l * S * 2, 0.7));
+        ['G5', 'F#5', 'F5', 'E5', 'D#5', 'D5'].forEach((n, i) => I.marimba(ctx, pizz, at(112 + i * 2), n, S, 0.9));
+        I.boing(ctx, sfx, at(60), 330, 0.55);
+        I.squeak(ctx, sfx, at(124), 0.8);
+        I.squeak(ctx, sfx, at(125.5), 0.8);
       }
     },
 
+    // Tick-tack-klocka, kromatiskt klättrande och en visselglidare mot toppen
     tension: {
-      bpm: 136, bars: 4, reverb: 0.18,
+      bpm: 140, bars: 4, reverb: 0.16,
       play(ctx, mix, t0, S) {
         const at = s => t0 + s * S;
-        const drums = mix.ch(0, 0.05), bassCh = mix.ch(0, 0), tickL = mix.ch(-0.5, 0.1), tickR = mix.ch(0.5, 0.1);
-        const pluck = mix.ch(-0.25, 0.25), brassCh = mix.ch(0.25, 0.25), glockCh = mix.ch(0, 0.4);
-        // Stiger ett steg per takt: C – D – E – G, spänningen byggs upp
-        const bars = [
-          { root: 'C2', chord: ['E4', 'G4', 'C5'], arp: ['C5', 'G4', 'E5', 'G4'] },
-          { root: 'D2', chord: ['F#4', 'A4', 'D5'], arp: ['D5', 'A4', 'F#5', 'A4'] },
-          { root: 'E2', chord: ['G#4', 'B4', 'E5'], arp: ['E5', 'B4', 'G#5', 'B4'] },
-          { root: 'G1', chord: ['D4', 'G4', 'B4'], arp: ['G5', 'D5', 'B5', 'D5'] }
-        ];
-        bars.forEach((b, bar) => {
+        const bassCh = mix.ch(0, 0), tickL = mix.ch(-0.6, 0.1), tickR = mix.ch(0.6, 0.1), pizz = mix.ch(-0.25, 0.25);
+        const brassCh = mix.ch(0.25, 0.2), drums = mix.ch(0, 0.05), sfx = mix.ch(0.3, 0.3);
+        const roots = ['C2', 'C#2', 'D2', 'D#2'];
+        roots.forEach((r, bar) => {
           const b0 = bar * 16;
-          for (let s = 0; s < 16; s += 2) I.bass(ctx, bassCh, at(b0 + s), up(b.root, s % 4 ? 12 : 0), S * 1.2, 0.8);
-          for (let s = 0; s < 16; s++) I.marimba(ctx, pluck, at(b0 + s), b.arp[s % 4], S, s % 4 ? 0.3 : 0.45);
-          for (let s = 0; s < 16; s += 2) I.tick(ctx, s % 4 ? tickR : tickL, at(b0 + s), 0.9, s % 4 ? 1700 : 2400);
-          [0, 4, 8, 12].forEach(s => I.kick(ctx, drums, at(b0 + s), 0.75));
-          [4, 12].forEach(s => I.clap(ctx, drums, at(b0 + s), 0.45));
-          I.brass(ctx, brassCh, at(b0), b.chord, S * 2, 0.9);
-          I.brass(ctx, brassCh, at(b0 + 10), b.chord, S * 1, 0.7);
+          for (let s = 0; s < 16; s += 2) I.bassoon(ctx, bassCh, at(b0 + s), up(r, s % 4 ? 12 : 0), S * 1.2, 1);
+          for (let s = 0; s < 16; s++) I.marimba(ctx, pizz, at(b0 + s), up(r, [24, 31, 28, 31][s % 4]), S, s % 4 ? 0.3 : 0.45);
+          for (let s = 0; s < 16; s += 2) I.woodblock(ctx, s % 4 ? tickR : tickL, at(b0 + s), 0.8, s % 4 ? 900 : 1300); // tick-tack
+          [0, 4, 8, 12].forEach(s => I.kick(ctx, drums, at(b0 + s), 0.6));
+          I.brass(ctx, brassCh, at(b0), [up(r, 28), up(r, 31), up(r, 36)], S * 1.5, 0.8);
         });
-        // Virvel som växer mot slutet av loopen
-        for (let s = 48; s < 64; s++) I.snare(ctx, drums, at(s), 0.12 + (s - 48) * 0.03);
-        [[14, 'G6'], [30, 'A6'], [46, 'B6'], [62, 'D7']].forEach(([s, n]) => I.glock(ctx, glockCh, at(s), n, S * 2, 0.7));
+        for (let s = 48; s < 64; s++) I.snare(ctx, drums, at(s), 0.1 + (s - 48) * 0.028);
+        I.slide(ctx, sfx, at(48), 400, 1900, S * 15, 0.8);
+        I.squeak(ctx, sfx, at(14), 0.6);
+        I.boing(ctx, sfx, at(30), 300, 0.45);
       }
     }
   };

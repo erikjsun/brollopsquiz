@@ -146,37 +146,50 @@
     VAO.music.I[name](a, out, a.currentTime + when, ...args);
   }
 
+  let tock = false;
   VAO.sound = {
     enabled: true,
     unlock() { ac(); },
-    tick() { if (this.enabled) bell(880, 0, 0.25, 0.12, 'triangle'); },
+    // tick-tack på träblock under nedräkningen
+    tick() {
+      if (!this.enabled) return;
+      tock = !tock;
+      inst('woodblock', 0, 1.2, tock ? 900 : 1300);
+    },
+    // "Vifta!" – tut-tut och ett gnissel
     go() {
       if (!this.enabled) return;
-      bell(1318.5, 0, 0.5, 0.14, 'triangle');
-      inst('snare', 0, 0.6); inst('kick', 0, 1);
+      inst('honk', 0, 1.1); inst('honk', 0.16, 1.1, 1.06);
+      inst('squeak', 0.34, 1);
+      inst('kick', 0, 0.8);
     },
-    // "Ta-daa!" – blåsackord + klockor
+    // Visselglidare upp – "Ta-daa!" – boing
     reveal() {
       if (!this.enabled) return;
-      inst('brass', 0, ['G4', 'C5', 'E5'], 0.12, 1.4);
-      inst('brass', 0.16, ['C5', 'E5', 'G5', 'C6'], 1.1, 1.6);
-      inst('kick', 0.16, 1);
-      inst('snare', 0.16, 0.7);
-      [1046.5, 1318.5, 1568, 2093].forEach((f, i) => bell(f, 0.2 + i * 0.07, 1.6, 0.07));
+      inst('slide', 0, 500, 1800, 0.32, 1.2);
+      inst('brass', 0.32, ['G4', 'C5', 'E5'], 0.12, 1.4);
+      inst('brass', 0.48, ['C5', 'E5', 'G5', 'C6'], 1.1, 1.6);
+      inst('kick', 0.48, 1);
+      inst('snare', 0.48, 0.7);
+      [1046.5, 1318.5, 1568, 2093].forEach((f, i) => bell(f, 0.52 + i * 0.07, 1.6, 0.07));
+      inst('boing', 1.3, 330, 0.8);
     },
     // Sorglig trombon för påhittade påståenden
     fake() {
       if (!this.enabled) return;
       [['G3', 'G3', 0.42], ['F#3', 'F#3', 0.42], ['F3', 'F3', 0.42], ['E3', 'D#3', 1.3]]
         .reduce((w, [a, b, d]) => { inst('trombone', w, a, b, d, 1.2); return w + d + 0.06; }, 0);
+      inst('slide', 2.7, 900, 250, 0.6, 0.8);
     },
     fanfare() {
       if (!this.enabled) return;
-      [[['C5', 'E5', 'G5'], 0, 0.14], [['C5', 'E5', 'G5'], 0.18, 0.14], [['C5', 'E5', 'G5'], 0.36, 0.14],
-       [['C5', 'F5', 'A5'], 0.54, 0.5], [['D5', 'G5', 'B5'], 1.08, 0.3], [['E5', 'G5', 'C6'], 1.44, 1.4]]
+      inst('slide', 0, 400, 1600, 0.4, 1.1);
+      [[['C5', 'E5', 'G5'], 0.45, 0.14], [['C5', 'E5', 'G5'], 0.63, 0.14], [['C5', 'E5', 'G5'], 0.81, 0.14],
+       [['C5', 'F5', 'A5'], 0.99, 0.5], [['D5', 'G5', 'B5'], 1.53, 0.3], [['E5', 'G5', 'C6'], 1.89, 1.4]]
         .forEach(([n, w, d]) => inst('brass', w, n, d, 1.5));
-      [0, 0.36, 0.54, 1.08, 1.44].forEach(w => inst('kick', w, 0.9));
-      [1046.5, 1318.5, 1568, 2093].forEach((f, i) => bell(f, 1.44 + i * 0.08, 1.8, 0.06));
+      [0.45, 0.81, 0.99, 1.53, 1.89].forEach(w => inst('kick', w, 0.9));
+      [1046.5, 1318.5, 1568, 2093].forEach((f, i) => bell(f, 1.89 + i * 0.08, 1.8, 0.06));
+      inst('honk', 2.9, 1); inst('honk', 3.06, 1, 1.06); inst('boing', 3.3, 300, 0.9);
     }
   };
 })();
