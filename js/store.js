@@ -67,6 +67,10 @@
       }
       const saved = JSON.parse(raw);
       if (!saved || saved.v !== 1) return base;
+      // Gammal standardtext från när gästerna skulle peka
+      if (saved.settings && saved.settings.votePrompt === 'Peka på den ni tror!') {
+        saved.settings.votePrompt = base.settings.votePrompt;
+      }
       return {
         ...base,
         ...saved,

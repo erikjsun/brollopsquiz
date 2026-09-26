@@ -114,13 +114,11 @@
   };
 
   // ---------------- Ljud ----------------
-  let audio = null;
+  // Delar AudioContext med musiken (js/music.js) så att ett klick låser upp båda.
   function ac() {
-    if (!audio) {
-      try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
-    }
-    if (audio.state === 'suspended') audio.resume().catch(() => {});
-    return audio;
+    const a = VAO.music ? VAO.music.context() : null;
+    if (a && a.state === 'suspended') a.resume().catch(() => {});
+    return a;
   }
 
   function bell(freq, when, dur = 1.6, vol = 0.18, type = 'sine') {
@@ -141,25 +139,44 @@
     o.stop(t + dur + 0.05); o2.stop(t + dur + 0.05);
   }
 
+  // Spela ett instrument från musikmotorn direkt till högtalarna
+  function inst(name, when, ...args) {
+    const a = ac(); if (!a || !VAO.music) return;
+    const out = a.createGain(); out.gain.value = 1.6; out.connect(a.destination);
+    VAO.music.I[name](a, out, a.currentTime + when, ...args);
+  }
+
   VAO.sound = {
     enabled: true,
     unlock() { ac(); },
     tick() { if (this.enabled) bell(880, 0, 0.25, 0.12, 'triangle'); },
-    go() { if (this.enabled) { bell(1318.5, 0, 0.5, 0.14, 'triangle'); } },
+    go() {
+      if (!this.enabled) return;
+      bell(1318.5, 0, 0.5, 0.14, 'triangle');
+      inst('snare', 0, 0.6); inst('kick', 0, 1);
+    },
+    // "Ta-daa!" – blåsackord + klockor
     reveal() {
       if (!this.enabled) return;
-      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => bell(f, i * 0.09, 1.8, 0.16));
-      bell(1567.98, 0.42, 2.2, 0.1);
+      inst('brass', 0, ['G4', 'C5', 'E5'], 0.12, 1.4);
+      inst('brass', 0.16, ['C5', 'E5', 'G5', 'C6'], 1.1, 1.6);
+      inst('kick', 0.16, 1);
+      inst('snare', 0.16, 0.7);
+      [1046.5, 1318.5, 1568, 2093].forEach((f, i) => bell(f, 0.2 + i * 0.07, 1.6, 0.07));
     },
+    // Sorglig trombon för påhittade påståenden
     fake() {
       if (!this.enabled) return;
-      bell(392, 0, 0.35, 0.16, 'triangle');
-      bell(311.13, 0.22, 0.9, 0.16, 'triangle');
+      [['G3', 'G3', 0.42], ['F#3', 'F#3', 0.42], ['F3', 'F3', 0.42], ['E3', 'D#3', 1.3]]
+        .reduce((w, [a, b, d]) => { inst('trombone', w, a, b, d, 1.2); return w + d + 0.06; }, 0);
     },
     fanfare() {
       if (!this.enabled) return;
-      [[523.25, 0], [659.25, 0.15], [783.99, 0.3], [1046.5, 0.5], [783.99, 0.75], [1046.5, 0.9]]
-        .forEach(([f, w]) => bell(f, w, 1.6, 0.14));
+      [[['C5', 'E5', 'G5'], 0, 0.14], [['C5', 'E5', 'G5'], 0.18, 0.14], [['C5', 'E5', 'G5'], 0.36, 0.14],
+       [['C5', 'F5', 'A5'], 0.54, 0.5], [['D5', 'G5', 'B5'], 1.08, 0.3], [['E5', 'G5', 'C6'], 1.44, 1.4]]
+        .forEach(([n, w, d]) => inst('brass', w, n, d, 1.5));
+      [0, 0.36, 0.54, 1.08, 1.44].forEach(w => inst('kick', w, 0.9));
+      [1046.5, 1318.5, 1568, 2093].forEach((f, i) => bell(f, 1.44 + i * 0.08, 1.8, 0.06));
     }
   };
 })();

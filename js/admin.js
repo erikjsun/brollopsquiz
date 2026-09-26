@@ -4,14 +4,16 @@
   const $ = s => document.querySelector(s);
   const WHO = ['tilda', 'oliver', 'both', 'none'];
   const WHO_LABEL = { tilda: PEOPLE.tilda.name, oliver: PEOPLE.oliver.name, both: 'Båda', none: 'Påhittat' };
-  const PHASE_LABEL = { ask: 'Påstående visas', vote: 'Nedräkning', reveal: 'Avslöjat' };
+  const PHASE_LABEL = { ask: 'Påstående visas', vote: 'Gästerna viftar', reveal: 'Avslöjat' };
+  const ICON = { tilda: PEOPLE.tilda.icon, oliver: PEOPLE.oliver.icon };
+  const whoHtml = who => (ICON[who] ? `<svg viewBox="0 0 24 24"><use href="#${ICON[who]}"/></svg>` : '') + esc(WHO_LABEL[who]);
 
   let filter = 'all';
   let editingId = null;
   let dragId = null;
 
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const tag = who => `<span class="tag ${who}">${esc(WHO_LABEL[who])}</span>`;
+  const tag = who => `<span class="tag ${who}">${whoHtml(who)}</span>`;
 
   function toast(msg) {
     let t = $('.toast');
@@ -37,7 +39,7 @@
     const list = store.playlist(s);
     const n = list.findIndex(x => x.id === step.id) + 1;
     if (step.phase === 'ask') return `Påstående ${n}`;
-    if (step.phase === 'vote') return 'Nedräkning';
+    if (step.phase === 'vote') return 'Vifta!';
     return 'Avslöja';
   }
 
@@ -111,7 +113,7 @@
       li.querySelector('.punch').textContent = q.punchline || '';
       const who = li.querySelector('.who');
       who.dataset.who = q.who;
-      who.textContent = WHO_LABEL[q.who];
+      who.innerHTML = whoHtml(q.who);
       ol.appendChild(li);
     });
     if (!ol.children.length) {
@@ -280,7 +282,25 @@
     if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); actions.next(); }
     else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); actions.prev(); }
     else if (e.key === 'b' || e.key === 'B') actions.togglePause();
+    else if (e.key === 'm' || e.key === 'M') actions.updateSettings({ music: !store.get().settings.music });
   });
+
+  // ---------- Musik ----------
+  $('#music-btn').addEventListener('click', () => actions.updateSettings({ music: !store.get().settings.music }));
+  const vol = $('#music-vol');
+  vol.addEventListener('input', () => {
+    $('#music-vol-val').textContent = vol.value + ' %';
+    actions.updateSettings({ musicVolume: +vol.value });
+  });
+
+  function renderMusic(s) {
+    const on = !!s.settings.music;
+    $('#music-btn').classList.toggle('off', !on);
+    $('#music-label').textContent = on ? 'Musik på' : 'Musik av';
+    if (document.activeElement !== vol) vol.value = s.settings.musicVolume ?? 45;
+    $('#music-vol-val').textContent = vol.value + ' %';
+    vol.disabled = !on;
+  }
 
   // ---------- Inställningar ----------
   document.querySelectorAll('[data-setting]').forEach(input => {
@@ -307,13 +327,28 @@
     document.querySelectorAll('#theme [data-theme]').forEach(b => b.classList.toggle('on', b.dataset.theme === s.settings.theme));
   }
 
-  // ---------- Status ----------
+  // ---------- Status: är scenfönstret öppet och är ljudet igång? ----------
   function renderStatus() {
-    $('#status').textContent = 'Synkas med scenfönster i den här webbläsaren';
+    let st = null;
+    try { st = JSON.parse(localStorage.getItem('vemavoss-stage') || 'null'); } catch (e) {}
+    const open = st && Date.now() - st.t < 6000;
+    const s = store.get();
+    const wantsAudio = s.settings.music || s.settings.sound;
+    const locked = open && wantsAudio && st.audio !== 'running';
+    const el = $('#status');
+    el.textContent = !open ? 'Inget scenfönster öppet' : locked ? 'Scenen är öppen – ljudet är låst' : 'Scenen är öppen';
+    el.classList.toggle('off', !open);
+    el.classList.toggle('warn', !!locked);
+    const warn = $('#audio-warn');
+    warn.hidden = !locked;
+    warn.textContent = 'Klicka en gång i scenfönstret (eller tryck på en tangent där) så startar musiken och ljudeffekterna.';
   }
+  setInterval(renderStatus, 1000);
+  window.addEventListener('storage', e => { if (e.key === 'vemavoss-stage') renderStatus(); });
 
   function render(s) {
     renderLive(s);
+    renderMusic(s);
     renderList(s);
     renderSettings(s);
   }

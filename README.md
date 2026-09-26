@@ -1,7 +1,8 @@
 # Vem av oss? – bröllopslek för Oliver & Tilda
 
 En festlig scenvisning för en ”vem av oss”-lek. Toastmastern läser upp påståenden,
-gästerna pekar på den de tror att det gäller, och sedan avslöjas svaret på skärmen.
+gästerna viftar med **servetten** om de tror att det gäller Tilda och med **gaffeln** om de
+tror Oliver – och sedan avslöjas svaret på skärmen.
 
 ## Sidor
 
@@ -17,11 +18,25 @@ gästerna pekar på den de tror att det gäller, och sedan avslöjas svaret på 
 2. Klicka **Öppna scenvy**, dra fönstret till projektorn och tryck **F** (helskärm).
    Klicka en gång i scenfönstret så att ljudeffekterna aktiveras.
 3. Tryck **Nästa** i kontrollpanelen. Varje påstående går i tre steg:
-   **Påstående → Nedräkning ”3-2-1 peka!” → Avslöja** (nedräkningen kan stängas av).
+   **Påstående → Nedräkning ”3-2-1 vifta!” → Avslöja** (nedräkningen kan stängas av).
 4. En presentationsklicker eller piltangenterna fungerar direkt i scenfönstret.
 
 Kortkommandon i scenfönstret: `→`/`Mellanslag` nästa · `←` bakåt · `F` helskärm ·
-`B` paus · `Home` intro · `End` avslutning · `R` spela upp effekten igen.
+`B` paus · `M` musik av/på · `Home` intro · `End` avslutning · `R` spela upp effekten igen.
+
+## Musik och ljud
+
+Game show-musiken genereras direkt i webbläsaren (`js/music.js`) – inga ljudfiler och
+inga musikrättigheter att bry sig om. I automatiskt läge byter den med showen:
+
+- **Showtema** (studsig boogie med blås) på intro och avslutning
+- **Lugn bakgrund** medan påståendet läses upp och brudparet pratar
+- **Spänningsmusik** medan gästerna viftar
+
+Vid avslöjandet spelas ett ”ta-daa!” (eller en sorglig trombon för påhittade påståenden)
+och musiken sänks en stund. Volym, av/på och vilken musik som spelas styrs i kontrollpanelen.
+Webbläsare kräver ett klick eller en tangenttryckning i scenfönstret innan ljud får spelas –
+kontrollpanelen varnar om ljudet fortfarande är låst.
 
 Kontrollpanel och scen synkas via webbläsarens lagring, så båda måste vara öppna
 **i samma webbläsare på samma dator**. Ändringar sparas automatiskt i webbläsaren.

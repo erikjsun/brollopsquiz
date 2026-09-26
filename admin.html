@@ -49,7 +49,7 @@
 
       <div class="phases" id="phases">
         <button class="chip" data-phase="ask">1 · Påstående</button>
-        <button class="chip" data-phase="vote" id="phase-vote">2 · Nedräkning</button>
+        <button class="chip" data-phase="vote" id="phase-vote">2 · Vifta!</button>
         <button class="chip" data-phase="reveal">3 · Avslöja</button>
       </div>
 
@@ -60,10 +60,19 @@
         <button class="btn small" id="replay" title="Spela upp nedräkning/konfetti igen">Igen ↻</button>
       </div>
 
+      <div class="music-row">
+        <button class="btn small" id="music-btn" title="Slå av/på musiken (M)">
+          <svg viewBox="0 0 24 24"><use href="#speaker"/></svg><span id="music-label">Musik</span>
+        </button>
+        <input type="range" id="music-vol" min="0" max="100" step="5" aria-label="Musikvolym">
+        <span class="vol-val" id="music-vol-val"></span>
+      </div>
+      <div class="audio-warn" id="audio-warn" hidden></div>
+
       <div class="upnext" id="upnext"></div>
 
       <p class="keys">
-        Kortkommandon: <kbd>→</kbd>/<kbd>Mellanslag</kbd> nästa · <kbd>←</kbd> bakåt · <kbd>B</kbd> paus.
+        Kortkommandon: <kbd>→</kbd>/<kbd>Mellanslag</kbd> nästa · <kbd>←</kbd> bakåt · <kbd>B</kbd> paus · <kbd>M</kbd> musik.
         En presentationsklicker fungerar direkt i scenfönstret.
       </p>
     </section>
@@ -96,8 +105,8 @@
         <input id="add-punch" type="text" placeholder="Poäng som visas vid avslöjandet (valfritt)">
         <div class="add-row">
           <div class="who-picker" id="add-who">
-            <label><input type="radio" name="who" value="tilda" checked><span>Tilda</span></label>
-            <label><input type="radio" name="who" value="oliver"><span>Oliver</span></label>
+            <label><input type="radio" name="who" value="tilda" checked><span><svg viewBox="0 0 24 24"><use href="#napkin"/></svg>Tilda</span></label>
+            <label><input type="radio" name="who" value="oliver"><span><svg viewBox="0 0 24 24"><use href="#fork"/></svg>Oliver</span></label>
             <label><input type="radio" name="who" value="both"><span>Båda</span></label>
             <label><input type="radio" name="who" value="none"><span>Påhittat</span></label>
           </div>
@@ -109,10 +118,21 @@
     <!-- ========== Inställningar ========== -->
     <section class="panel settings">
       <div class="panel-head"><h2>Inställningar</h2></div>
-      <label class="row"><input type="checkbox" data-setting="countdown"> <span>Nedräkning ”3-2-1 peka!” före avslöjandet</span></label>
+      <label class="row"><input type="checkbox" data-setting="countdown"> <span>Nedräkning ”3-2-1 vifta!” före avslöjandet</span></label>
       <label class="row indent"><span>Sekunder</span> <input type="number" min="1" max="10" data-setting="countdownSeconds"></label>
       <label class="row indent col"><span>Text under nedräkningen</span> <input type="text" data-setting="votePrompt"></label>
-      <label class="row"><input type="checkbox" data-setting="sound"> <span>Ljudeffekter (klick i scenfönstret en gång för att aktivera)</span></label>
+      <label class="row"><input type="checkbox" data-setting="music"> <span>Game show-musik i bakgrunden</span></label>
+      <label class="row indent col"><span>Vilken musik</span>
+        <select data-setting="musicMode">
+          <option value="auto">Automatiskt – byter med showen (rekommenderas)</option>
+          <option value="theme">Showtemat hela tiden</option>
+          <option value="bed">Lugn bakgrund hela tiden</option>
+          <option value="tension">Spänningsmusik hela tiden</option>
+        </select>
+      </label>
+      <p class="hint-text indent">Automatiskt: showtema på intro och avslutning, lugn bakgrund medan påståendet läses, spänningsmusik när gästerna viftar.</p>
+      <label class="row"><input type="checkbox" data-setting="sound"> <span>Ljudeffekter (tick, ”ta-daa!”, fanfar)</span></label>
+      <p class="hint-text">Ljudet startar när man klickat eller tryckt på en tangent i scenfönstret en gång.</p>
       <label class="row"><input type="checkbox" data-setting="showProgress"> <span>Visa förloppsprickar</span></label>
       <label class="row"><input type="checkbox" data-setting="showMicCue"> <span>Visa ”Ordet till …” vid avslöjandet</span></label>
       <div class="row">
@@ -125,6 +145,28 @@
       <button class="btn small danger" id="reset-all">Nollställ allt</button>
     </section>
   </main>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="fork" viewBox="0 0 24 24">
+        <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7.5 2.5v5.2a4.5 4.5 0 0 0 9 0V2.5"/><path d="M10.5 2.5v6"/><path d="M13.5 2.5v6"/><path d="M12 12.2v9.3"/>
+        </g>
+      </symbol>
+      <symbol id="napkin" viewBox="0 0 24 24">
+        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3.5 4.5c2.9-.7 5.7-.7 8.5 0s5.6.7 8.5 0c-.6 2.8-.6 5.6 0 8.4-2.9.2-5.3 1.4-7.4 3.4L8 21c-.8-2.6-2.4-4.4-4.5-5.4.7-3.7.7-7.4 0-11.1z" fill="currentColor" fill-opacity=".14" stroke-width="1.6"/>
+          <path d="M20.5 12.9c-1.6 2.8-3.8 5.2-6.6 7.2-.3-1.4-.6-2.7-.8-3.8" stroke-width="1.6" fill="currentColor" fill-opacity=".3"/>
+          <path d="M6 7c2-.4 4-.4 6 0s4 .4 6 0M6 7c.4 2.4.4 4.8 0 7.2" stroke-width="1.1" stroke-dasharray=".1 1.9"/>
+        </g>
+      </symbol>
+      <symbol id="speaker" viewBox="0 0 24 24">
+        <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>
+        </g>
+      </symbol>
+    </defs>
+  </svg>
 
   <template id="row-tpl">
     <li class="item" draggable="true">

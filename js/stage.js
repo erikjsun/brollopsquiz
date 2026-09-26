@@ -1,6 +1,6 @@
 /* Scenvyn: visar det som kontrollpanelen (eller fjärrkontrollen) styr. */
 (function () {
-  const { store, actions, sound, confetti, PEOPLE } = VAO;
+  const { store, actions, sound, confetti, music, PEOPLE } = VAO;
   const params = new URLSearchParams(location.search);
   const PREVIEW = params.has('preview');
   if (PREVIEW) document.documentElement.classList.add('preview');
@@ -27,6 +27,7 @@
     const img = fig.querySelector('img');
     fig.querySelector('.monogram').textContent = p.monogram;
     fig.querySelector('.name').textContent = p.name;
+    fig.querySelector('.prop span').textContent = `Vifta med ${p.prop}`;
     img.style.objectPosition = p.photoPosition || '50% 25%';
     // Prova vanliga filändelser tills någon finns
     const exts = /\.\w{3,4}$/.test(p.photo) ? [''] : ['.jpg', '.jpeg', '.png', '.webp', '.JPG', '.JPEG', '.PNG'];
@@ -104,9 +105,13 @@
       return `<div class="reveal-kicker">Ingen av dem – det var</div><div class="stamp">Påhittat!</div>`;
     }
     const name = who === 'both' ? 'Båda två!' : `${esc(PEOPLE[who].name)}!`;
+    const cap = x => x.charAt(0).toUpperCase() + x.slice(1);
+    const kicker = who === 'both'
+      ? `${cap(PEOPLE.tilda.props)} och ${PEOPLE.oliver.props} hade rätt – det var`
+      : `${cap(PEOPLE[who].props)} hade rätt – det var`;
     const cue = who === 'both' ? 'Ordet till brudparet' : `Ordet till ${esc(PEOPLE[who].name)}`;
     return `
-      <div class="reveal-kicker">Det var</div>
+      <div class="reveal-kicker">${esc(kicker)}</div>
       <div class="reveal-name script gold-text">${name}</div>
       ${q.punchline ? `<div class="punchline">${esc(q.punchline)}</div>` : ''}
       ${s.settings.showMicCue && !q.punchline ? `<div class="mic"><svg><use href="#mic"/></svg>${cue}</div>` : ''}
@@ -126,7 +131,11 @@
       <div class="statement-box"><p class="statement">${words(q.text)}</p></div>
       <div class="slot">
         <div class="ask">
-          <div class="ask-line"><span class="arrow">←</span><span class="t">${esc(PEOPLE.tilda.name)}</span> eller <span class="o">${esc(PEOPLE.oliver.name)}</span><span class="arrow">→</span></div>
+          <div class="ask-line">
+            <span class="pick t"><svg class="pi"><use href="#${PEOPLE.tilda.icon}"/></svg><span class="nm">${esc(PEOPLE.tilda.name)}</span></span>
+            <span class="or">eller</span>
+            <span class="pick o"><span class="nm">${esc(PEOPLE.oliver.name)}</span><svg class="pi"><use href="#${PEOPLE.oliver.icon}"/></svg></span>
+          </div>
         </div>
         <div class="vote">
           <div class="vote-prompt">${esc(s.settings.votePrompt)}</div>
@@ -144,12 +153,12 @@
       el.innerHTML = `
         <div class="eyebrow">${esc(PEOPLE.oliver.name)} &amp; ${esc(PEOPLE.tilda.name)} presenterar</div>
         <h1 class="script gold-text">Vem av oss?</h1>
-        <p class="lede">Lyssna på påståendet – och peka på den ni tror att det gäller.</p>`;
+        <p class="lede">Vifta med ${esc(PEOPLE.tilda.prop)} för ${esc(PEOPLE.tilda.name)} – eller med ${esc(PEOPLE.oliver.prop)} för ${esc(PEOPLE.oliver.name)}!</p>`;
     } else {
       el.innerHTML = `
         <div class="eyebrow">Alla hemligheter är avslöjade</div>
         <h1 class="script gold-text">Skål för brudparet!</h1>
-        <p class="lede">Nu vet ni precis vad ni har att vänta er.</p>`;
+        <p class="lede">Nu kan ni lägga ner ${esc(PEOPLE.tilda.props)} och ${esc(PEOPLE.oliver.props)} – och höja glasen!</p>`;
     }
     return el;
   }
@@ -178,7 +187,7 @@
     let shown = null;
     const step = () => {
       const left = secs - Math.floor((Date.now() - t0) / 1000);
-      const val = left > 0 ? String(left) : 'Peka!';
+      const val = left > 0 ? String(left) : 'Vifta!';
       if (val === shown) return;
       const late = Date.now() - t0 > secs * 1000 + 1500;
       shown = val;
@@ -195,6 +204,7 @@
   // ---------- Firande ----------
   function celebrate(s, q) {
     if (PREVIEW) return;
+    if (s.settings.sound) music.duck(s.live.screen === 'outro' ? 3500 : 2200);
     if (s.live.screen === 'outro') {
       sound.fanfare();
       confetti.cannons([cssVar('--gold'), cssVar('--gold-2'), cssVar('--gold-3'), cssVar('--tilda'), cssVar('--oliver'), '#ffffff']);
@@ -210,6 +220,27 @@
     });
   }
 
+  // ---------- Musik ----------
+  function musicTrack(s, screen, phase) {
+    if (!s.settings.music) return null;
+    const mode = s.settings.musicMode || 'auto';
+    if (mode !== 'auto') return mode;
+    if (s.live.paused) return 'bed';
+    if (screen === 'intro' || screen === 'outro') return 'theme';
+    return phase === 'vote' ? 'tension' : 'bed';
+  }
+
+  const audioLock = document.getElementById('audio-lock');
+  function updateAudioLock(s = store.get()) {
+    const wantsAudio = s.settings.music || s.settings.sound;
+    audioLock.classList.toggle('on', !!wantsAudio && music.state !== 'running');
+  }
+
+  // Berätta för kontrollpanelen att scenen är öppen och om ljudet är igång
+  function reportStatus() {
+    try { localStorage.setItem('vemavoss-stage', JSON.stringify({ t: Date.now(), audio: music.state })); } catch (e) {}
+  }
+
   // ---------- Rendering ----------
   function render(s) {
     const live = s.live;
@@ -219,6 +250,12 @@
     const q = store.current(s);
     const screen = live.screen === 'question' && !q ? 'intro' : live.screen;
     const phase = screen === 'question' ? (live.phase === 'vote' && !s.settings.countdown ? 'ask' : live.phase) : 'ask';
+
+    // Musik: byter låt efter var i showen vi är
+    if (!PREVIEW) {
+      music.set(musicTrack(s, screen, phase), (s.settings.musicVolume ?? 45) / 100);
+      updateAudioLock(s);
+    }
 
     body.dataset.screen = screen;
     body.dataset.phase = phase;
@@ -305,6 +342,16 @@
 
   if (PREVIEW) return;
 
+  music.onstate = () => { updateAudioLock(); reportStatus(); };
+  music.context();
+  music.preload();
+  reportStatus();
+  setInterval(reportStatus, 2000);
+  window.addEventListener('beforeunload', () => { try { localStorage.removeItem('vemavoss-stage'); } catch (e) {} });
+
+  function unlockAudio() { music.unlock(); sound.unlock(); }
+  audioLock.addEventListener('click', unlockAudio);
+
   // ---------- Tangentbord / fjärrkontroll ----------
   function toggleFullscreen() {
     if (document.fullscreenElement) document.exitFullscreen();
@@ -313,7 +360,7 @@
 
   document.addEventListener('keydown', e => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
-    sound.unlock();
+    unlockAudio();
     const k = e.key;
     if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(k)) { e.preventDefault(); actions.next(); }
     else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(k)) { e.preventDefault(); actions.prev(); }
@@ -322,10 +369,11 @@
     else if (k === 'Home') { actions.showScreen('intro'); }
     else if (k === 'End') { actions.showScreen('outro'); }
     else if (k === 'r' || k === 'R') { actions.replay(); }
+    else if (k === 'm' || k === 'M') { actions.updateSettings({ music: !store.get().settings.music }); }
   });
 
   document.addEventListener('dblclick', toggleFullscreen);
-  document.addEventListener('pointerdown', () => sound.unlock());
+  document.addEventListener('pointerdown', unlockAudio);
 
   // Visa tips och muspekare när musen rör sig
   let idleTimer;

@@ -23,13 +23,19 @@ VAO.PEOPLE = {
     photo: 'assets/tilda',
     zoom: 2.5,
     focus: [0.615, 0.30],
-    monogram: 'T'
+    monogram: 'T',
+    prop: 'servetten',        // gästerna viftar med servetten om de tror Tilda
+    props: 'servetterna',
+    icon: 'napkin'
   },
   oliver: {
     name: 'Oliver',
     photo: 'assets/oliver.webp',
     photoPosition: '48% 16%',
-    monogram: 'O'
+    monogram: 'O',
+    prop: 'gaffeln',          // … och med gaffeln om de tror Oliver
+    props: 'gafflarna',
+    icon: 'fork'
   }
 };
 
@@ -106,10 +112,13 @@ VAO.DEFAULT_STATEMENTS = [
 ];
 
 VAO.DEFAULT_SETTINGS = {
-  countdown: true,          // visa "3-2-1 peka!" innan avslöjandet
+  countdown: true,          // visa "3-2-1 vifta!" innan avslöjandet
   countdownSeconds: 3,
-  votePrompt: 'Peka på den ni tror!',
-  sound: true,
+  votePrompt: 'Vifta med servetten eller gaffeln!',
+  sound: true,              // ljudeffekter (tick, ta-daa, fanfar)
+  music: true,              // game show-musik i bakgrunden
+  musicVolume: 45,          // 0–100
+  musicMode: 'auto',        // 'auto' (byter med showen) | 'theme' | 'bed' | 'tension'
   showProgress: true,
   showMicCue: true          // "Ordet till Tilda" vid avslöjandet
 };

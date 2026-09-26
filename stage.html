@@ -34,10 +34,11 @@
           <img alt="" draggable="false">
           <div class="monogram serif">T</div>
         </div>
-        <div class="badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.7 1.3 4.5 2.6.8-1.3 2.3-2.6 4.5-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg></div>
+        <div class="badge" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#napkin"/></svg></div>
       </div>
       <figcaption>
         <span class="name script">Tilda</span>
+        <span class="prop"><svg viewBox="0 0 24 24"><use href="#napkin"/></svg><span>Vifta med servetten</span></span>
         <span class="tally"></span>
       </figcaption>
     </figure>
@@ -50,10 +51,11 @@
           <img alt="" draggable="false">
           <div class="monogram serif">O</div>
         </div>
-        <div class="badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.7 1.3 4.5 2.6.8-1.3 2.3-2.6 4.5-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg></div>
+        <div class="badge" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#fork"/></svg></div>
       </div>
       <figcaption>
         <span class="name script">Oliver</span>
+        <span class="prop"><svg viewBox="0 0 24 24"><use href="#fork"/></svg><span>Vifta med gaffeln</span></span>
         <span class="tally"></span>
       </figcaption>
     </figure>
@@ -72,8 +74,13 @@
 
   <canvas id="confetti" aria-hidden="true"></canvas>
 
+  <button class="audio-lock" id="audio-lock" type="button">
+    <svg viewBox="0 0 24 24"><use href="#speaker"/></svg>
+    Klicka här eller tryck på valfri tangent för att starta musiken
+  </button>
+
   <div class="hint" id="hint">
-    <kbd>F</kbd> helskärm · <kbd>→</kbd>/<kbd>Mellanslag</kbd> nästa · <kbd>←</kbd> bakåt · <kbd>B</kbd> paus
+    <kbd>F</kbd> helskärm · <kbd>→</kbd>/<kbd>Mellanslag</kbd> nästa · <kbd>←</kbd> bakåt · <kbd>B</kbd> paus · <kbd>M</kbd> musik
   </div>
 
   <!-- SVG-symboler -->
@@ -107,6 +114,23 @@
         </g>
         <circle cx="100" cy="10" r="2.2" fill="currentColor"/>
       </symbol>
+      <symbol id="fork" viewBox="0 0 24 24">
+        <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7.5 2.5v5.2a4.5 4.5 0 0 0 9 0V2.5"/><path d="M10.5 2.5v6"/><path d="M13.5 2.5v6"/><path d="M12 12.2v9.3"/>
+        </g>
+      </symbol>
+      <symbol id="napkin" viewBox="0 0 24 24">
+        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3.5 4.5c2.9-.7 5.7-.7 8.5 0s5.6.7 8.5 0c-.6 2.8-.6 5.6 0 8.4-2.9.2-5.3 1.4-7.4 3.4L8 21c-.8-2.6-2.4-4.4-4.5-5.4.7-3.7.7-7.4 0-11.1z" fill="currentColor" fill-opacity=".14" stroke-width="1.6"/>
+          <path d="M20.5 12.9c-1.6 2.8-3.8 5.2-6.6 7.2-.3-1.4-.6-2.7-.8-3.8" stroke-width="1.6" fill="currentColor" fill-opacity=".3"/>
+          <path d="M6 7c2-.4 4-.4 6 0s4 .4 6 0M6 7c.4 2.4.4 4.8 0 7.2" stroke-width="1.1" stroke-dasharray=".1 1.9"/>
+        </g>
+      </symbol>
+      <symbol id="speaker" viewBox="0 0 24 24">
+        <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>
+        </g>
+      </symbol>
       <symbol id="mic" viewBox="0 0 24 24">
         <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="2.5" width="6" height="12" rx="3"/>
@@ -119,6 +143,7 @@
 
   <script src="js/data.js"></script>
   <script src="js/store.js"></script>
+  <script src="js/music.js"></script>
   <script src="js/effects.js"></script>
   <script src="js/stage.js"></script>
 </body>
