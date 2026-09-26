@@ -118,7 +118,7 @@ VAO.DEFAULT_SETTINGS = {
   sound: true,              // ljudeffekter (tick, ta-daa, fanfar)
   music: true,              // game show-musik i bakgrunden
   musicVolume: 45,          // 0–100
-  musicMode: 'auto',        // 'auto' (byter med showen) | 'theme' | 'bed' | 'tension'
+  musicMode: 'auto',        // 'auto' (spänning när gästerna viftar) | 'theme' | 'tension'
   musicPack: 'circus',      // musikstil: circus | happy | chip | disco | swing (se js/music.js)
   showProgress: true,
   showMicCue: true          // "Ordet till Tilda" vid avslöjandet

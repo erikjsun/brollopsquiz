@@ -5,10 +5,9 @@
  * Varje låt renderas en gång till en ljudbuffert (OfflineAudioContext) och
  * loopas sedan sömlöst. Byte mellan låtar sker med en kort övertoning.
  *
- * Fem musikstilar (se PACKS längre ner), var och en med tre låtar:
- *   theme   – Showtema (intro och avslutning)
- *   bed     – Bakgrund att prata över (medan påståendet läses)
- *   tension – Spänning (medan gästerna viftar)
+ * Fem musikstilar (se PACKS längre ner), var och en med två låtar:
+ *   theme   – Musiken som går under hela showen
+ *   tension – Spänning medan gästerna viftar
  */
 (function () {
   // ---------------- Noter ----------------
@@ -359,36 +358,6 @@
       }
     },
 
-    // Smygande tå-dans med fagott och pizzicato – lekfull men lugn att prata över
-    bed: {
-      bpm: 120, bars: 8, swing: 0.14, reverb: 0.26,
-      play(ctx, mix, t0, S, swing) {
-        const at = s => t0 + s * S + (Math.floor(s) % 4 === 2 ? swing * S * 2 : 0);
-        const bassCh = mix.ch(0, 0.05), pizz = mix.ch(-0.3, 0.3), toy = mix.ch(0.35, 0.4), drums = mix.ch(0, 0.1), sfx = mix.ch(0.4, 0.3);
-        const bassline = [['C2', 'E2', 'G2', 'E2'], ['A1', 'C#2', 'E2', 'C#2'], ['D2', 'F#2', 'A2', 'F#2'], ['G1', 'B1', 'D2', 'F2']];
-        for (let bar = 0; bar < 8; bar++) {
-          const b0 = bar * 16;
-          bassline[bar % 4].forEach((n, i) => I.bassoon(ctx, bassCh, at(b0 + i * 4), n, S * 1.6, 1));
-          [4, 12].forEach(s => I.clap(ctx, drums, at(b0 + s), 0.22));
-          for (let s = 0; s < 16; s += 2) I.shaker(ctx, drums, at(b0 + s), s % 4 ? 0.5 : 0.25);
-        }
-        // Tå-på-tå-melodi med kromatiska smygsteg
-        const tiptoe = [
-          [0, 'E4', 1], [2, 'F4', 1], [3, 'F#4', 1], [4, 'G4', 2], [8, 'C5', 1], [10, 'G4', 1], [12, 'E4', 2],
-          [16, 'C#5', 1], [18, 'D5', 1], [19, 'D#5', 1], [20, 'E5', 2], [24, 'G5', 1], [26, 'E5', 1], [28, 'C#5', 2],
-          [32, 'F#4', 1], [34, 'G4', 1], [35, 'G#4', 1], [36, 'A4', 2], [40, 'C5', 1], [42, 'A4', 1], [44, 'F#4', 2],
-          [48, 'B4', 1], [50, 'D5', 1], [52, 'F5', 1], [54, 'A5', 1], [56, 'G5', 2]
-        ];
-        tiptoe.forEach(([s, n, l]) => I.marimba(ctx, pizz, at(s), n, l * S, 0.9));
-        // andra varvet: leksakspiano en oktav upp, och ett kromatiskt fall på slutet
-        tiptoe.slice(0, 21).forEach(([s, n, l]) => I.glock(ctx, toy, at(s + 64), up(n, 12), l * S * 2, 0.7));
-        ['G5', 'F#5', 'F5', 'E5', 'D#5', 'D5'].forEach((n, i) => I.marimba(ctx, pizz, at(112 + i * 2), n, S, 0.9));
-        I.boing(ctx, sfx, at(60), 330, 0.55);
-        I.squeak(ctx, sfx, at(124), 0.8);
-        I.squeak(ctx, sfx, at(125.5), 0.8);
-      }
-    },
-
     // Tick-tack-klocka, kromatiskt klättrande och en visselglidare mot toppen
     tension: {
       bpm: 140, bars: 4, reverb: 0.16,
@@ -471,44 +440,6 @@
         });
         // trumvirvel in i loopen igen
         [120, 122, 124, 125, 126, 127].forEach((s, i) => I.snare(ctx, drums, at(s), 0.35 + i * 0.08));
-      }
-    },
-
-    bed: {
-      bpm: 116, bars: 8, swing: 0.12, reverb: 0.28,
-      play(ctx, mix, t0, S, swing) {
-        const at = s => t0 + s * S + (s % 4 === 2 ? swing * S * 2 : 0);
-        const drums = mix.ch(0, 0.1), bassCh = mix.ch(0, 0), marL = mix.ch(-0.35, 0.3), keysR = mix.ch(0.3, 0.3);
-        const glockCh = mix.ch(0.15, 0.45), shakeCh = mix.ch(0.35, 0.05);
-        // I – IV – V – I, glatt och enkelt
-        const bars = [
-          { root: 'C2', chord: ['E4', 'G4', 'C5'], arp: ['C5', 'G4', 'E5', 'G4'] },
-          { root: 'F1', chord: ['F4', 'A4', 'C5'], arp: ['C5', 'A4', 'F5', 'A4'] },
-          { root: 'G1', chord: ['D4', 'G4', 'B4'], arp: ['B4', 'G4', 'D5', 'G4'] },
-          { root: 'C2', chord: ['E4', 'G4', 'C5'], arp: ['C5', 'G4', 'E5', 'G4'] },
-          { root: 'A1', chord: ['E4', 'A4', 'C5'], arp: ['C5', 'A4', 'E5', 'A4'] },
-          { root: 'F1', chord: ['F4', 'A4', 'C5'], arp: ['C5', 'A4', 'F5', 'A4'] },
-          { root: 'D2', chord: ['F4', 'A4', 'D5'], arp: ['D5', 'A4', 'F5', 'A4'] },
-          { root: 'G1', chord: ['D4', 'F4', 'B4'], arp: ['B4', 'G4', 'D5', 'F5'] }
-        ];
-        bars.forEach((b, bar) => {
-          const b0 = bar * 16;
-          // hoppig bas: ett, (och-två), tre, fyra upp
-          [[0, 0, 1], [6, 0, 0.6], [8, 7, 0.9], [12, 12, 0.7]].forEach(([s, semi, v]) => I.bass(ctx, bassCh, at(b0 + s), up(b.root, semi), S * 1.6, v * 0.85));
-          // marimba i åttondelar
-          for (let s = 0; s < 16; s += 2) I.marimba(ctx, marL, at(b0 + s), b.arp[(s / 2) % 4], S * 2, s % 4 ? 0.5 : 0.7);
-          // lätta ackord på baktakten
-          [4, 12].forEach(s => I.keys(ctx, keysR, at(b0 + s), b.chord, S * 1.4, 0.8));
-          I.kick(ctx, drums, at(b0), 0.5);
-          I.kick(ctx, drums, at(b0 + 8), 0.4);
-          [4, 12].forEach(s => I.clap(ctx, drums, at(b0 + s), 0.35));
-          for (let s = 0; s < 16; s += 2) I.shaker(ctx, shakeCh, at(b0 + s), s % 4 ? 0.8 : 0.45);
-        });
-        // Små klockspelsfraser – glad frågesportsstämning
-        [[24, 'G5'], [26, 'C6'], [28, 'E6'], [30, 'G6'],
-         [56, 'A5'], [58, 'C6'], [60, 'F6'],
-         [88, 'E6'], [90, 'D6'], [92, 'C6'], [94, 'E6'],
-         [120, 'D6'], [122, 'F6'], [124, 'G6'], [126, 'B6']].forEach(([s, n]) => I.glock(ctx, glockCh, at(s), n, S * 2, 0.8));
       }
     },
 
@@ -713,24 +644,7 @@
         I.coin(ctx, fx, at(127), 0.8);
       }
     },
-    bed: {
-      bpm: 112, bars: 8, reverb: 0.15,
-      play(ctx, mix, t0, S) {
-        const at = s => t0 + s * S;
-        const arp = mix.ch(-0.3, 0.15), bass = mix.ch(0, 0), mel = mix.ch(0.3, 0.25), drums = mix.ch(0, 0.05);
-        const bars = [[['C5', 'E5', 'G5', 'E5'], 'C2'], [['A4', 'C5', 'E5', 'C5'], 'A1'], [['A4', 'C5', 'F5', 'C5'], 'F1'], [['B4', 'D5', 'G5', 'D5'], 'G1']];
-        for (let bar = 0; bar < 8; bar++) {
-          const [ch, root] = bars[bar % 4], b0 = bar * 16;
-          for (let s = 0; s < 16; s += 2) I.chip(ctx, arp, at(b0 + s), ch[(s / 2) % 4], S * 1.5, 0.35, 0.125);
-          [0, 6, 8, 12].forEach((s, i) => I.chipTri(ctx, bass, at(b0 + s), up(root, i === 3 ? 12 : i === 2 ? 7 : 0), S * 1.8, 0.8));
-          I.chipKick(ctx, drums, at(b0), 0.6);
-          [4, 12].forEach(s => I.chipNoise(ctx, drums, at(b0 + s), 0.05, 0.45, 4000));
-        }
-        [[24, 'G5'], [26, 'A5'], [28, 'C6'], [56, 'B5'], [58, 'D6'], [60, 'G6'], [88, 'E6'], [90, 'D6'], [92, 'C6'], [120, 'D6'], [122, 'B5'], [124, 'G5']]
-          .forEach(([s, n]) => I.chip(ctx, mel, at(s), n, S * 1.8, 0.6, 0.5));
-        I.coin(ctx, mel, at(62), 0.4);
-      }
-    },
+
     tension: {
       bpm: 144, bars: 4, reverb: 0.1,
       play(ctx, mix, t0, S) {
@@ -788,26 +702,7 @@
         });
       }
     },
-    bed: {
-      bpm: 116, bars: 8, reverb: 0.3,
-      play(ctx, mix, t0, S) {
-        const at = s => t0 + s * S;
-        const drums = mix.ch(0, 0.06), hats = mix.ch(0.3, 0.05), bass = mix.ch(0, 0), gtr = mix.ch(-0.45, 0.1), pad = mix.ch(0, 0.4);
-        const bars = [
-          { root: 'D2', chord: ['F4', 'A4', 'C5', 'E5'] }, { root: 'G1', chord: ['F4', 'G4', 'B4', 'D5'] },
-          { root: 'C2', chord: ['E4', 'G4', 'B4', 'D5'] }, { root: 'A1', chord: ['E4', 'G4', 'A4', 'C5'] }
-        ];
-        for (let bar = 0; bar < 8; bar++) {
-          const b = bars[bar % 4], b0 = bar * 16;
-          [0, 4, 8, 12].forEach(s => I.kick(ctx, drums, at(b0 + s), 0.6));
-          [4, 12].forEach(s => I.clap(ctx, drums, at(b0 + s), 0.35));
-          [2, 6, 10, 14].forEach(s => I.hat(ctx, hats, at(b0 + s), 0.5, true));
-          for (let s = 0; s < 16; s += 2) I.bass(ctx, bass, at(b0 + s), up(b.root, s % 4 ? 12 : 0), S * 1.4, 0.8);
-          [2, 6, 10, 14].forEach(s => I.chick(ctx, gtr, at(b0 + s), 0.6, b.chord[1]));
-          I.strings(ctx, pad, at(b0), b.chord, S * 15, 0.7, 0.4);
-        }
-      }
-    },
+
     tension: {
       bpm: 126, bars: 4, reverb: 0.25,
       play(ctx, mix, t0, S) {
@@ -866,29 +761,7 @@
         mel.forEach(([s, n, l]) => I.sax(ctx, sax, at(s), n, l * S, 1));
       }
     },
-    bed: {
-      bpm: 120, bars: 8, swing: 0.3, reverb: 0.3,
-      play(ctx, mix, t0, S, sw) {
-        const at = swingAt(t0, S, sw);
-        const bass = mix.ch(0, 0.05), ride = mix.ch(0.4, 0.15), drums = mix.ch(0, 0.1), piano = mix.ch(-0.3, 0.3), vib = mix.ch(0.25, 0.45);
-        const chords = [
-          { walk: ['C2', 'E2', 'G2', 'A2'], comp: ['E4', 'A4', 'D5'] },
-          { walk: ['A1', 'C2', 'E2', 'G2'], comp: ['E4', 'G4', 'C5'] },
-          { walk: ['D2', 'F2', 'A2', 'C3'], comp: ['F4', 'A4', 'C5', 'E5'] },
-          { walk: ['G1', 'B1', 'D2', 'F2'], comp: ['F4', 'B4', 'E5'] }
-        ];
-        for (let bar = 0; bar < 8; bar++) {
-          const c = chords[bar % 4], b0 = bar * 16;
-          c.walk.forEach((n, i) => I.upright(ctx, bass, at(b0 + i * 4), n, S * 3.6, 0.9));
-          [0, 4, 6, 8, 12, 14].forEach(s => I.ride(ctx, ride, at(b0 + s), s % 4 ? 0.45 : 0.65));
-          [4, 12].forEach(s => I.brush(ctx, drums, at(b0 + s), 0.8));
-          [0, 6].forEach(s => I.keys(ctx, piano, at(b0 + s), c.comp, S * 1.2, 0.7));
-        }
-        [[24, 'G5'], [26, 'A5'], [28, 'C6'], [30, 'E6'], [56, 'F5'], [58, 'A5'], [60, 'D6'],
-         [88, 'E6'], [90, 'D6'], [92, 'C6'], [94, 'A5'], [120, 'B5'], [122, 'D6'], [124, 'F6'], [126, 'E6']]
-          .forEach(([s, n]) => I.glock(ctx, vib, at(s), n, S * 3, 0.8));
-      }
-    },
+
     tension: {
       bpm: 160, bars: 4, reverb: 0.25,
       play(ctx, mix, t0, S) {
@@ -910,7 +783,7 @@
   };
 
   // ---------------- Musikstilar ----------------
-  // Varje stil har tre låtar: theme (intro/avslutning), bed (under påståendet), tension (medan gästerna viftar)
+  // Varje stil har två låtar: theme (hela showen) och tension (medan gästerna viftar)
   const PACKS = {
     circus: { name: 'Cirkus', desc: 'Knasig polka med kazoo, tuba, visselglidare och tutor', tracks: CIRCUS },
     happy:  { name: 'Glad frågesport', desc: 'Pigg dur-låt med blås, klapp och klockspel', tracks: HAPPY },
@@ -918,7 +791,7 @@
     disco:  { name: 'Disco', desc: 'Dansgolv med stråkar, funkgitarr och oktavbas', tracks: DISCO },
     swing:  { name: '60-tals tv-show', desc: 'Storband med saxofon, kontrabas och djungeltrummor', tracks: SWING }
   };
-  const ROLES = ['theme', 'bed', 'tension'];
+  const ROLES = ['theme', 'tension'];
   const trackOf = key => { const [pack, role] = String(key).split('/'); return (PACKS[pack] || PACKS.circus).tracks[role]; };
 
   // ---------------- Rendering & uppspelning ----------------
@@ -1030,8 +903,8 @@
     current.src = src; current.gain = g;
   }
 
-  // Bakgrunden ska ligga lite lägre så att man hör toastmastern
-  const TRACK_LEVEL = { theme: 1, bed: 0.7, tension: 0.9 };
+  // Temat ligger lite lägre så att man hör toastmastern
+  const TRACK_LEVEL = { theme: 0.85, tension: 0.95 };
 
   function applyVolume() {
     if (!master) return;

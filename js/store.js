@@ -67,6 +67,8 @@
       }
       const saved = JSON.parse(raw);
       if (!saved || saved.v !== 1) return base;
+      // Bakgrundslåten finns inte längre – samma musik som temat
+      if (saved.settings && saved.settings.musicMode === 'bed') saved.settings.musicMode = 'theme';
       // Gammal standardtext från när gästerna skulle peka
       if (saved.settings && saved.settings.votePrompt === 'Peka på den ni tror!') {
         saved.settings.votePrompt = base.settings.votePrompt;

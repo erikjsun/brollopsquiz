@@ -225,10 +225,11 @@
     if (!s.settings.music) return null;
     const pack = s.settings.musicPack || 'circus';
     const mode = s.settings.musicMode || 'auto';
-    if (mode !== 'auto') return `${pack}/${mode}`;
-    if (s.live.paused) return `${pack}/bed`;
-    if (screen === 'intro' || screen === 'outro') return `${pack}/theme`;
-    return `${pack}/${phase === 'vote' ? 'tension' : 'bed'}`;
+    if (mode === 'tension') return `${pack}/tension`;
+    if (mode !== 'auto') return `${pack}/theme`;
+    // Samma låt hela showen – spänningsmusik bara medan gästerna viftar
+    const voting = screen === 'question' && phase === 'vote' && !s.live.paused;
+    return `${pack}/${voting ? 'tension' : 'theme'}`;
   }
   let preloadedPack = null;
 

@@ -38,11 +38,8 @@ kontrollpanelen (med provlyssning):
 | **Disco** | Dansgolv med stråkar, funkgitarr och oktavbas |
 | **60-tals tv-show** | Storband med saxofon, kontrabas och djungeltrummor |
 
-Varje stil har tre låtar, och i automatiskt läge byter musiken med showen:
-
-- **Showtema** på intro och avslutning
-- **Bakgrund** medan påståendet läses upp och brudparet pratar
-- **Spänning** medan gästerna viftar
+Varje stil har två låtar: **musiken** som går under hela showen, och **spänningsmusik**
+som tar över medan gästerna viftar.
 
 Vid avslöjandet spelas ett ”ta-daa!” (eller en sorglig trombon för påhittade påståenden)
 och musiken sänks en stund. Volym, av/på och vilken musik som spelas styrs i kontrollpanelen.

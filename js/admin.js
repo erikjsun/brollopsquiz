@@ -305,7 +305,7 @@
   }
 
   // ---------- Musikstilar + provlyssning ----------
-  const ROLE_LABEL = { theme: 'Tema', bed: 'Bakgrund', tension: 'Spänning' };
+  const ROLE_LABEL = { theme: 'Musik', tension: 'Spänning' };
   let previewing = null;
   const loading = new Set();
   const packsEl = $('#packs');
