@@ -304,3 +304,35 @@ kbd { font-family: var(--sans); font-size: 11px; border: 1px solid var(--line); 
 }
 .hint-text { margin: 0 0 6px; font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
 .hint-text.indent { padding-left: 26px; }
+
+/* ---------- Musikstilar ---------- */
+.muted { font-style: normal; color: var(--ink-faint); font-size: 12px; }
+.packs { display: grid; gap: 6px; margin-top: 4px; }
+.pack {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+}
+.pack:hover { border-color: var(--gold); }
+.pack.on { border-color: var(--gold); background: var(--gold-3); box-shadow: 0 0 0 1px var(--gold); }
+.pack input { accent-color: var(--wine); width: 16px; height: 16px; margin: 0; }
+.pack b { display: block; font-family: var(--serif); font-size: 18px; font-weight: 600; line-height: 1.2; }
+.pack small { display: block; color: var(--ink-soft); font-size: 12px; margin-top: 2px; }
+.pack .play { display: flex; gap: 4px; }
+.pack .play button {
+  border: 1px solid var(--line); background: #fff; border-radius: 999px;
+  font-size: 12px; padding: 4px 9px; cursor: pointer; white-space: nowrap; color: var(--ink);
+}
+.pack .play button:hover { border-color: var(--gold); }
+.pack .play button.playing { background: var(--wine); color: #fff; border-color: var(--wine); }
+@media (max-width: 640px) {
+  .pack { grid-template-columns: 20px 1fr; }
+  .pack .play { grid-column: 2; flex-wrap: wrap; }
+}

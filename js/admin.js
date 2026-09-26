@@ -291,15 +291,59 @@
   vol.addEventListener('input', () => {
     $('#music-vol-val').textContent = vol.value + ' %';
     actions.updateSettings({ musicVolume: +vol.value });
+    if (previewing) VAO.music.set(previewing, +vol.value / 100);
   });
 
   function renderMusic(s) {
     const on = !!s.settings.music;
     $('#music-btn').classList.toggle('off', !on);
-    $('#music-label').textContent = on ? 'Musik på' : 'Musik av';
+    const pack = VAO.music.packs.find(p => p.id === (s.settings.musicPack || 'circus'));
+    $('#music-label').textContent = on ? `Musik: ${pack ? pack.name : 'på'}` : 'Musik av';
     if (document.activeElement !== vol) vol.value = s.settings.musicVolume ?? 45;
     $('#music-vol-val').textContent = vol.value + ' %';
     vol.disabled = !on;
+  }
+
+  // ---------- Musikstilar + provlyssning ----------
+  const ROLE_LABEL = { theme: 'Tema', bed: 'Bakgrund', tension: 'Spänning' };
+  let previewing = null;
+  const loading = new Set();
+  const packsEl = $('#packs');
+  packsEl.innerHTML = VAO.music.packs.map(p => `
+    <label class="pack" data-pack="${p.id}">
+      <input type="radio" name="pack" value="${p.id}">
+      <span><b>${esc(p.name)}</b><small>${esc(p.desc)}</small></span>
+      <span class="play">${VAO.music.roles.map(r => `<button type="button" data-preview="${p.id}/${r}" title="Provlyssna ${ROLE_LABEL[r].toLowerCase()}">▶ ${ROLE_LABEL[r]}</button>`).join('')}</span>
+    </label>`).join('');
+  packsEl.addEventListener('change', e => {
+    if (e.target.name === 'pack') actions.updateSettings({ musicPack: e.target.value });
+  });
+  packsEl.addEventListener('click', e => {
+    const b = e.target.closest('[data-preview]');
+    if (!b) return;
+    e.preventDefault();
+    const key = b.dataset.preview;
+    VAO.music.unlock();
+    previewing = previewing === key ? null : key;
+    VAO.music.set(previewing, (store.get().settings.musicVolume ?? 45) / 100);
+    if (previewing) {
+      // första gången tar låten någon sekund att förbereda
+      loading.add(key);
+      VAO.music.render(key, VAO.music.context().sampleRate).then(() => { loading.delete(key); renderPacks(store.get()); });
+    }
+    renderPacks(store.get());
+  });
+  function renderPacks(s) {
+    const cur = s.settings.musicPack || 'circus';
+    packsEl.querySelectorAll('.pack').forEach(el => {
+      el.classList.toggle('on', el.dataset.pack === cur);
+      el.querySelector('input').checked = el.dataset.pack === cur;
+    });
+    packsEl.querySelectorAll('[data-preview]').forEach(b => {
+      const on = b.dataset.preview === previewing;
+      b.classList.toggle('playing', on);
+      b.textContent = (on ? (loading.has(b.dataset.preview) ? '… ' : '■ ') : '▶ ') + ROLE_LABEL[b.dataset.preview.split('/')[1]];
+    });
   }
 
   // ---------- Inställningar ----------
@@ -349,6 +393,7 @@
   function render(s) {
     renderLive(s);
     renderMusic(s);
+    renderPacks(s);
     renderList(s);
     renderSettings(s);
   }

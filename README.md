@@ -27,11 +27,22 @@ Kortkommandon i scenfönstret: `→`/`Mellanslag` nästa · `←` bakåt · `F` 
 ## Musik och ljud
 
 Game show-musiken genereras direkt i webbläsaren (`js/music.js`) – inga ljudfiler och
-inga musikrättigheter att bry sig om. I automatiskt läge byter den med showen:
+inga musikrättigheter att bry sig om. Det finns fem musikstilar att välja mellan i
+kontrollpanelen (med provlyssning):
 
-- **Showtema** (studsig boogie med blås) på intro och avslutning
-- **Lugn bakgrund** medan påståendet läses upp och brudparet pratar
-- **Spänningsmusik** medan gästerna viftar
+| Stil | Känsla |
+| --- | --- |
+| **Cirkus** | Knasig polka med kazoo, tuba, visselglidare och tutor |
+| **Glad frågesport** | Pigg dur-låt med blås, klapp och klockspel |
+| **Retro 8-bit** | Tv-spelsmusik med pip, hopp och mynt |
+| **Disco** | Dansgolv med stråkar, funkgitarr och oktavbas |
+| **60-tals tv-show** | Storband med saxofon, kontrabas och djungeltrummor |
+
+Varje stil har tre låtar, och i automatiskt läge byter musiken med showen:
+
+- **Showtema** på intro och avslutning
+- **Bakgrund** medan påståendet läses upp och brudparet pratar
+- **Spänning** medan gästerna viftar
 
 Vid avslöjandet spelas ett ”ta-daa!” (eller en sorglig trombon för påhittade påståenden)
 och musiken sänks en stund. Volym, av/på och vilken musik som spelas styrs i kontrollpanelen.

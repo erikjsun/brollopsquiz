@@ -122,7 +122,11 @@
       <label class="row indent"><span>Sekunder</span> <input type="number" min="1" max="10" data-setting="countdownSeconds"></label>
       <label class="row indent col"><span>Text under nedräkningen</span> <input type="text" data-setting="votePrompt"></label>
       <label class="row"><input type="checkbox" data-setting="music"> <span>Game show-musik i bakgrunden</span></label>
-      <label class="row indent col"><span>Vilken musik</span>
+      <div class="row indent col">
+        <span>Musikstil <em class="muted">– klicka ▶ för att provlyssna här i kontrollpanelen</em></span>
+        <div class="packs" id="packs"></div>
+      </div>
+      <label class="row indent col"><span>Vilken låt</span>
         <select data-setting="musicMode">
           <option value="auto">Automatiskt – byter med showen (rekommenderas)</option>
           <option value="theme">Showtemat hela tiden</option>
@@ -190,6 +194,7 @@
 
   <script src="js/data.js"></script>
   <script src="js/store.js"></script>
+  <script src="js/music.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>

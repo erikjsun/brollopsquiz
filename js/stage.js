@@ -223,12 +223,14 @@
   // ---------- Musik ----------
   function musicTrack(s, screen, phase) {
     if (!s.settings.music) return null;
+    const pack = s.settings.musicPack || 'circus';
     const mode = s.settings.musicMode || 'auto';
-    if (mode !== 'auto') return mode;
-    if (s.live.paused) return 'bed';
-    if (screen === 'intro' || screen === 'outro') return 'theme';
-    return phase === 'vote' ? 'tension' : 'bed';
+    if (mode !== 'auto') return `${pack}/${mode}`;
+    if (s.live.paused) return `${pack}/bed`;
+    if (screen === 'intro' || screen === 'outro') return `${pack}/theme`;
+    return `${pack}/${phase === 'vote' ? 'tension' : 'bed'}`;
   }
+  let preloadedPack = null;
 
   const audioLock = document.getElementById('audio-lock');
   function updateAudioLock(s = store.get()) {
@@ -253,6 +255,8 @@
 
     // Musik: byter låt efter var i showen vi är
     if (!PREVIEW) {
+      // förbered alla tre låtarna i vald stil så att bytena går direkt
+      if (preloadedPack !== s.settings.musicPack) { preloadedPack = s.settings.musicPack; music.preload(preloadedPack); }
       music.set(musicTrack(s, screen, phase), (s.settings.musicVolume ?? 45) / 100);
       updateAudioLock(s);
     }
@@ -344,7 +348,6 @@
 
   music.onstate = () => { updateAudioLock(); reportStatus(); };
   music.context();
-  music.preload();
   reportStatus();
   setInterval(reportStatus, 2000);
   window.addEventListener('beforeunload', () => { try { localStorage.removeItem('vemavoss-stage'); } catch (e) {} });
